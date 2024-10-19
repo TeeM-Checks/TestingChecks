@@ -1,0 +1,845 @@
+﻿    /* main layout
+----------------------------------------------------------*/
+    .content-wrapper {
+        margin: 0 auto;
+        max-width: 90%;
+        min-height: 180px;
+    }
+
+
+          .ModalPoupBackgroundCssClass
+        {
+            background-color: Black;
+            filter: alpha(opacity=20);
+            opacity: 0.2;
+        }
+
+    .hiddencol
+    {
+        display:none;
+    }
+
+    #body {
+        background-color: #ffffff;
+        clear: both;
+        padding-bottom: 35px;
+        background-image: url('../Images/global-bg.png');
+    }
+
+    .main-content {
+        padding-left: 10px;
+        padding-top: 30px;
+    }
+
+    .featured + .main-content {
+        background: url("../Images/heroAccent.png") no-repeat;
+    }
+
+    header .content-wrapper {
+        padding-top: 20px;
+    }
+
+    footer {
+        clear: both;
+        background-color: #e2e2e2;
+        font-size: .9em;
+        height: 100px;
+    }
+
+
+    /* site title
+----------------------------------------------------------*/
+    .site-title {
+        color: #c8c8c8;
+        font-family: Rockwell, Consolas, "Courier New", Courier, monospace;
+        font-size: 2.3em;
+        margin: 0;
+    }
+
+        .site-title a, .site-title a:hover, .site-title a:active {
+            background: none;
+            color: #c8c8c8;
+            outline: none;
+            text-decoration: none;
+        }
+
+
+    /* style for the page body */
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font: normal .80em 'trebuchet ms', arial, sans-serif;
+        background: #FFF;
+        color: #555;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* fonts style */
+    p {
+        padding: 0 0 20px 0;
+        line-height: 1.7em;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: #007a84;
+        letter-spacing: 0em;
+        padding: 0 0 5px 0;
+    }
+
+    h1, h2, h3 {
+        font: normal 170% 'century gothic', arial;
+        margin: 0 0 15px 0;
+        padding: 15px 0 5px 0;
+        color: #007a84;
+        font-weight: 600;
+    }
+
+    h2 {
+        font-size: 160%;
+        padding: 9px 0 5px 0;
+        color: #007a84;
+    }
+
+    h3 {
+        font-size: 140%;
+        padding: 5px 0 0 0;
+    }
+
+    h4, h6 {
+        color: #007a84;
+        padding: 0 0 5px 0;
+        font: normal 110% arial;
+        text-transform: none;
+    }
+
+    h5, h6 {
+        color: #888;
+        font: normal 95% arial;
+        letter-spacing: normal;
+        padding: 0 0 15px 0;
+    }
+
+    /* hyperlink color */
+    a, a:hover {
+        outline: none;
+        text-decoration: underline;
+        color: #007073;
+    }
+
+
+    #leftTD {
+        width: 90%;
+    }
+
+
+    #rightTD {
+        width: 10%;
+    }
+
+    /* header alignment */
+    #main, #logo, #menubar, #site_content, #footer {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+    #header {
+        height: 157px;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-bottom-color: #007a84;
+    }
+
+    /* for image banner that appears in home page */
+    #banner {
+        background: transparent url(cipc_logo.jpg) no-repeat;
+        width: 80%;
+        height: 300px;
+        margin-bottom: 20px;
+        border: 6px solid #DDD;
+    }
+
+    /* for image banner that appears in modules page */
+    #banner2 {
+        background: transparent url(banner2.png) no-repeat;
+        width: 100%;
+        height: 196px;
+        margin-bottom: 20px;
+        border: 3px solid #AEB002;
+    }
+
+    /* for logo style */
+    #logo {
+        width: 100%;
+        position: relative;
+        height: 104px;
+        background: transparent;
+        top: 0px;
+        left: 160px;
+    }
+
+        #logo #logo_text {
+            position: absolute;
+            top: 10px;
+            left: 100px;
+            width: 99%;
+            height: 74px;
+        }
+
+        #logo h1, #logo h2 {
+            font: normal 300% 'century gothic', arial, sans-serif;
+            border-bottom: 0;
+            text-transform: none;
+            margin: 0 0 0 9px;
+        }
+
+    #logo_text h1, #logo_text h1 a, #logo_text h1 a:hover {
+        padding: 22px 0 0 0;
+        color: #007a84;
+        letter-spacing: 0.1em;
+        text-decoration: none;
+    }
+
+        /* for logo color */
+        #logo_text h1 a .logo_colour {
+            color: #6BAB4D;
+        }
+
+    /* font style for <h2> */
+    #logo_text h2 {
+        font-size: 120%;
+        padding: 4px 0 0 0;
+        color: #fff;
+    }
+
+    #logo_pos {
+        height: 100%;
+        width: 161px;
+        margin-left: 10px;
+        margin-top: 10px;
+        float: left;
+    }
+
+
+
+
+    /* for main menu alignment */
+    #menubar {
+        width: 100%;
+        height: 46px;
+    }
+
+    ul#menu {
+        float: left;
+        margin: 0;
+        height: 54px;
+    }
+
+        ul#menu li {
+            float: left;
+            padding: 0 0 0 9px;
+            list-style: none;
+            margin: 1px 2px 0 0;
+            background: #007073 url(tab.png) no-repeat 0 0;
+        }
+
+
+            /* for the selected page to highlight which page is on */
+            ul#menu li a {
+                font: normal 100% 'trebuchet ms', sans-serif;
+                display: block;
+                float: left;
+                height: 20px;
+                padding: 6px 35px 5px 28px;
+                text-align: center;
+                color: #FFF;
+                text-decoration: none;
+                background: #007073 url(tab.png) no-repeat 100% 0;
+            }
+
+            ul#menu li.selected a {
+                height: 20px;
+                padding: 6px 35px 5px 28px;
+            }
+
+            ul#menu li.selected {
+                margin: 1px 2px 0 0;
+                background: #6BAB4D;
+            }
+
+                ul#menu li.selected a, ul#menu li.selected a:hover {
+                    background: #6BAB4D;
+                    color: #FFF;
+                }
+
+    .literal {
+        background: #00C6F0 url(tab_selected.png) no-repeat 100% 0;
+        color: #FFF;
+    }
+
+    /* alignment for page contect */
+    #site_content {
+        width: 70%;
+        overflow: hidden;
+        margin: 20px auto 0 auto;
+        padding: 0 0 10px 0;
+        background-image: url('Images/global-bg.png');
+    }
+
+    #site_content1 {
+        width: 90%;
+        min-height: 650px;
+        overflow: hidden;
+        margin: 20px auto 0 auto;
+        padding: 0 0 10px 0;
+        background-image: url('Images/global-bg.png');
+    }
+
+    #site_content2 {
+        width: 90%;
+        min-height: 650px;
+        overflow: hidden;
+        margin: 20px auto 0 auto;
+        padding: 0 0 10px 0;
+        background-image: url('Images/global-bg.png');
+    }
+
+    /* to make all sidebars verticaly */
+    #sidebar_container {
+        float: right;
+        width: 30%;
+    }
+
+    #attachFieldset {
+        width: 100%;
+        height: 100px;
+    }
+    /* the line which appears in the top of sidebar */
+    .sidebar_top {
+        width: 100%;
+        height: 14px;
+        background: transparent url(side_top.png) no-repeat;
+    }
+
+    /* the line which appears in the buttom of sidebar */
+    .sidebar_base {
+        width: 100%;
+        height: 14px;
+        background: url(side_base.png) no-repeat;
+    }
+
+    /* to put speces between sidebars */
+    .sidebar {
+        float: right;
+        width: 100%;
+        padding: 0;
+        margin: 0 0 16px 0;
+    }
+
+    /* style for the right-side column in the main body content */
+    .sidebar_item {
+        background: url(side_back.png) repeat-y;
+        padding: 0 15px;
+        width: 100%;
+    }
+
+    .smalltable {
+        border-style: none;
+        border-color: inherit;
+        border-width: medium;
+        border-collapse: collapse;
+        width: 50%;
+        border-spacing: 0px;
+    }
+
+    .table {
+        border-style: none;
+        border-color: inherit;
+        border-width: medium;
+        border-collapse: collapse;
+        width: 92%;
+        border-spacing: 0px;
+    }
+
+    .table2 {
+        border-style: none;
+        border-color: inherit;
+        border-width: medium;
+        border-collapse: collapse;
+        width: 85%;
+        border-spacing: 0px;
+    }
+
+    .table22 {
+        border-style: none;
+        border-color: inherit;
+        border-width: medium;
+        border-collapse: collapse;
+        width: 100%;
+        border-spacing: 0px;
+    }
+
+    .table90 {
+        width: 100%;
+    }
+
+    .table23 {
+        border-color: inherit;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .table5 {
+        border-style: none;
+        border-color: inherit;
+        border-width: medium;
+        border-collapse: collapse;
+        width: 98%;
+        border-spacing: 0px;
+    }
+
+    .td {
+        text-align: right;
+    }
+
+    .td22 {
+        text-align: left;
+        vertical-align: central;
+    }
+
+    .td22Top {
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .hiddencol {
+        display: none;
+    }
+
+    .td2 {
+        text-align: left;
+        vertical-align: central;
+    }
+
+    .td3 {
+        text-align: right;
+    }
+
+    .td4 {
+        text-align: center;
+    }
+
+    .tr {
+        width: 150%;
+    }
+
+    .tr4 {
+        text-align: center;
+    }
+
+    /* style for page content alignment */
+    #content {
+        text-align: left;
+        width: 60%;
+        padding: 0 0 0 5px;
+        float: left;
+    }
+
+    #imageUploadRow {
+        visibility: collapse;
+    }
+
+
+    #imageUploadRowV {
+        visibility: collapse;
+    }
+
+    /* style for page content alignment */
+    #content1 {
+        text-align: left;
+        width: 75%;
+        padding: 0 0 0 5px;
+        float: left;
+    }
+
+    #content100 {
+        text-align: left;
+        width: 98%;
+        padding: 0 0 0 5px;
+        float: left;
+    }
+
+    /* style for page content alignment */
+    #content5 {
+        text-align: left;
+        width: 95%;
+        padding: 0 0 0 5px;
+        float: left;
+    }
+
+    /* style for bullets points */
+    #content ul li, .sidebar ul li {
+        list-style-type: none;
+        background: url(bullet.png) no-repeat;
+        margin: 0 0 0 0;
+        padding: 0 0 4px 25px;
+        line-height: 1.5em;
+    }
+
+    #footer {
+        width: 100%;
+        font-family: 'trebuchet ms', sans-serif;
+        font-size: 100%;
+        height: 80px;
+        padding: 28px 0 5px 0;
+        text-align: center;
+        background: #37BDBF;
+        color: #fff;
+    }
+
+        #footer a {
+            color: white;
+        }
+
+        /* style page footer text */
+        #footer p {
+            line-height: 1.7em;
+            padding: 0 0 10px 0;
+        }
+
+        /* style for page hyperlink in the page footer */
+        #footer a:hover {
+            color: #FFF;
+            text-decoration: none;
+        }
+
+    /* for speces between each line */
+    .form_settings p {
+        padding: 0 0 4px 0;
+    }
+
+    /* style for alighment */
+    .form_settings span {
+        float: left;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* style for TextBox */
+    .form_settings input, .form_settings textarea {
+        padding: 5px;
+        width: 100%;
+        font: 100% arial;
+        border: 1px solid #E5E5DB;
+        background: #FFF;
+        color: #47433F;
+    }
+
+    .form_ticket input {
+        padding: 5px;
+        width: 75%;
+        font: 100% arial;
+        border: 1px solid #E5E5DB;
+        background: #FFF;
+        color: #47433F;
+    }
+
+    .form_ticket textarea {
+        padding: 5px;
+        width: 75%;
+        font: 100% arial;
+        border: 1px solid #E5E5DB;
+        background: #FFF;
+        color: #47433F;
+    }
+
+
+    .form_ticketA input {
+        padding: 5px;
+        width: 100%;
+        font: 100% arial;
+        border: 1px solid #E5E5DB;
+        background: #FFF;
+        color: #47433F;
+    }
+
+    .form_ticketA textarea {
+        padding: 5px;
+        width: 100%;
+        font: 100% arial;
+        border: 1px solid #E5E5DB;
+        background: #FFF;
+        color: #47433F;
+    }
+
+    .largertextbox {
+        background: #FFF url(/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        font-size: 15px;
+        height: 25px;
+        width: 100%;
+    }
+
+
+    .btn btn-default {
+        -webkit-border-radius: 9;
+        -moz-border-radius: 9;
+        border-radius: 9px;
+        font-family: Arial;
+        color: white;
+        font-size: 14px;
+        background: #2E6373;
+        background-color: #2E6373;
+        padding: 6px 23px 6px 24px;
+        text-decoration: none;
+        width: 150px;
+        text-align: center;
+    }
+
+    .btn btn-defaultright {
+        -webkit-border-radius: 9;
+        -moz-border-radius: 9;
+        border-radius: 9px;
+        font-family: Arial;
+        color: white;
+        font-size: 14px;
+        background: #2E6373;
+        padding: 6px 23px 6px 24px;
+        text-decoration: none;
+        width: 150px;
+        text-align: right;
+    }
+
+    .btn btn-default:hover {
+        background: #4df079;
+        text-decoration: none;
+    }
+
+    fieldset {
+        -webkit-border-radius: 8px;
+        -moz-border-radius: 8px;
+        border-radius: 8px;
+        width: 150%;
+        height: 90px;
+    }
+
+    .modalBackground {
+        background-color: darkgray;
+        opacity: 0.5;
+        filter: alpha(opacity=40);
+    }
+
+    .hiddenClass {
+        display: none;
+        visibility: collapse;
+        width: 0px;
+    }
+
+    .captchabutton {
+        background-color: Transparent;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        outline: none;
+        color: #00727d;
+    }
+
+    .popCell {
+        background-color: #007073;
+        text-align: center;
+        border: 0px solid #aaaaaa;
+        border-collapse: collapse;
+    }
+
+    .popTable {
+        border: none;
+        border-collapse: collapse;
+        width: 100%;
+        height: 100%;
+        padding: 0px;
+    }
+
+    .popCellRight {
+        background-color: #6BAB4D;
+        text-align: right;
+        border: 0px solid #aaaaaa;
+        border-collapse: collapse;
+    }
+
+
+    .popCellRightPlain {
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .popCellCenterPlain {
+        text-align: center;
+        vertical-align: top;
+    }
+
+    .popCellCenter {
+        background-color: #6BAB4D;
+        text-align: center;
+        border: 0px solid #aaaaaa;
+        border-collapse: collapse;
+    }
+
+    .popRow {
+        border-collapse: collapse;
+        border: 0px;
+    }
+
+    .popCellLeft {
+        background-color: #E4E4E4;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .popCellLeftPlain {
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .DetailLabel {
+        font-size: 13px;
+        font-weight: 600;
+        color: black;
+    }
+
+    .asptextclass {
+        width: 200px;
+    }
+
+    .hr2 {
+        border: 1px thin #00727d;
+    }
+
+    .valignTableTop {
+        vertical-align: top;
+    }
+
+    .popTableV {
+        vertical-align: top;
+        border: none;
+        border-collapse: collapse;
+        width: 100%;
+        height: 100%;
+        padding: 0px;
+    }
+
+    .insideTable {
+        width: 100%;
+    }
+
+    .popASPTextBox {
+        border-color: honeydew;
+        border-style: solid;
+        border-width: thin;
+        background-color: transparent;
+        width: 98%;
+    }
+
+    .textarea {
+        resize: none;
+    }
+
+
+    .lnkStyle {
+        text-decoration: none;
+    }
+
+
+
+    .textbox {
+        background: #FFF url(~/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 95%;
+    }
+
+
+    .textboxsmall {
+        background: #FFF url(~/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 350px;
+    }
+
+    .textboxmedium {
+        background: #FFF url(~/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 550px;
+    }
+
+    .textboxlarger {
+        background: #FFF url(~/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 60px;
+        width: 400px;
+    }
+
+    .textboxsmallTT {
+        background: #FFF url(~/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 200px;
+    }
+
+    .textboxsmallTTL {
+        background: #FFF url(~/Images/input-text-9.png) no-repeat 4px 4px;
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 350px;
+    }
+
+    .textboxsmallDD {
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 230px;
+    }
+
+    .textboxsmallDDL {
+        border: 1px solid #999;
+        outline: 0;
+        padding-left: 25px;
+        height: 25px;
+        width: 350px;
+    }
+
+    .toogleButtons {
+        font-family: Arial;
+        color: #ffffff;
+        font-size: 14px;
+        background: #37BDBF;
+        padding: 6px 23px 6px 24px;
+        text-decoration: none;
+        border: solid 1px #5B9968;
+    }
+
+        .toogleButtons:hover {
+            background: #F26524;
+            text-decoration: none;
+        }
+

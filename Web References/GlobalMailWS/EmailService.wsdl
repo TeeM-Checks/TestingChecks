@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://com.sig-hosting.efiling.www/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://com.sig-hosting.efiling.www/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://com.sig-hosting.efiling.www/">
+      <s:element name="SendCUBASMTPMail_Single">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sTo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sFrom" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSubject" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sBody" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="server" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="smtUserPass" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendCUBASMTPMail_SingleResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SendCUBASMTPMail_SingleResult" type="tns:SMTPMailResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="SMTPMailResponse">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="noError" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="errorMessage" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="SendCUBASMTPMail_MultipleBCC">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sTo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="agentEmails" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sFrom" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSubject" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sBody" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="server" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="smtUserPass" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="bcc" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendCUBASMTPMail_MultipleBCCResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SendCUBASMTPMail_MultipleBCCResult" type="tns:SMTPMailResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendCUBASMTPMail_MultipleBCCSupport">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sTo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="agentEmails" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sFrom" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sSubject" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="sBody" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="server" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="smtUserPass" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="bcc" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="supportEMail" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendCUBASMTPMail_MultipleBCCSupportResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SendCUBASMTPMail_MultipleBCCSupportResult" type="tns:SMTPMailResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="SendCUBASMTPMail_SingleSoapIn">
+    <wsdl:part name="parameters" element="tns:SendCUBASMTPMail_Single" />
+  </wsdl:message>
+  <wsdl:message name="SendCUBASMTPMail_SingleSoapOut">
+    <wsdl:part name="parameters" element="tns:SendCUBASMTPMail_SingleResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendCUBASMTPMail_MultipleBCCSoapIn">
+    <wsdl:part name="parameters" element="tns:SendCUBASMTPMail_MultipleBCC" />
+  </wsdl:message>
+  <wsdl:message name="SendCUBASMTPMail_MultipleBCCSoapOut">
+    <wsdl:part name="parameters" element="tns:SendCUBASMTPMail_MultipleBCCResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendCUBASMTPMail_MultipleBCCSupportSoapIn">
+    <wsdl:part name="parameters" element="tns:SendCUBASMTPMail_MultipleBCCSupport" />
+  </wsdl:message>
+  <wsdl:message name="SendCUBASMTPMail_MultipleBCCSupportSoapOut">
+    <wsdl:part name="parameters" element="tns:SendCUBASMTPMail_MultipleBCCSupportResponse" />
+  </wsdl:message>
+  <wsdl:portType name="EmailServiceSoap">
+    <wsdl:operation name="SendCUBASMTPMail_Single">
+      <wsdl:input message="tns:SendCUBASMTPMail_SingleSoapIn" />
+      <wsdl:output message="tns:SendCUBASMTPMail_SingleSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendCUBASMTPMail_MultipleBCC">
+      <wsdl:input message="tns:SendCUBASMTPMail_MultipleBCCSoapIn" />
+      <wsdl:output message="tns:SendCUBASMTPMail_MultipleBCCSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendCUBASMTPMail_MultipleBCCSupport">
+      <wsdl:input message="tns:SendCUBASMTPMail_MultipleBCCSupportSoapIn" />
+      <wsdl:output message="tns:SendCUBASMTPMail_MultipleBCCSupportSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="EmailServiceSoap" type="tns:EmailServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="SendCUBASMTPMail_Single">
+      <soap:operation soapAction="http://com.sig-hosting.efiling.www/SendCUBASMTPMail_Single" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendCUBASMTPMail_MultipleBCC">
+      <soap:operation soapAction="http://com.sig-hosting.efiling.www/SendCUBASMTPMail_MultipleBCC" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendCUBASMTPMail_MultipleBCCSupport">
+      <soap:operation soapAction="http://com.sig-hosting.efiling.www/SendCUBASMTPMail_MultipleBCCSupport" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="EmailServiceSoap12" type="tns:EmailServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="SendCUBASMTPMail_Single">
+      <soap12:operation soapAction="http://com.sig-hosting.efiling.www/SendCUBASMTPMail_Single" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendCUBASMTPMail_MultipleBCC">
+      <soap12:operation soapAction="http://com.sig-hosting.efiling.www/SendCUBASMTPMail_MultipleBCC" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendCUBASMTPMail_MultipleBCCSupport">
+      <soap12:operation soapAction="http://com.sig-hosting.efiling.www/SendCUBASMTPMail_MultipleBCCSupport" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="EmailService">
+    <wsdl:port name="EmailServiceSoap" binding="tns:EmailServiceSoap">
+      <soap:address location="https://ipmanual.cipc.co.za/CommunicationServices/EmailService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="EmailServiceSoap12" binding="tns:EmailServiceSoap12">
+      <soap12:address location="https://ipmanual.cipc.co.za/CommunicationServices/EmailService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

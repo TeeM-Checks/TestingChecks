@@ -1,0 +1,118 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.Mobile.master.cs" Inherits="NewBilletterie.Site_Mobile" %>
+
+<%@ Register Src="~/ViewSwitcher.ascx" TagPrefix="friendlyUrls" TagName="ViewSwitcher" %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta name="viewport" content="width=device-width" />
+    <link id="mainMobileCSSLink" runat="server" rel="stylesheet" type="text/css" />
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <%--<link href="Styles/officeStyleSheetCIPC.css" rel="stylesheet" />--%>
+    <script type="text/javascript">
+
+        function OpenInNewTab(url) {
+            var oldPage = document.body.innerHTML;
+            var win = window.open(url, '_blank');
+            document.body.innerHTML = oldPage;
+            win.focus();
+        }
+
+        function printDiv(divID) {
+            var divElements = document.getElementById(divID).innerHTML;
+            //Get the HTML of whole page
+            var oldPage = document.body.innerHTML;
+
+            //Reset the page's HTML with div's HTML only
+            document.body.innerHTML =
+              "<html><body>" +
+              divElements + "</body>";
+
+            //Print Page
+            window.print();
+
+            //Restore 0orignal HTML
+            document.body.innerHTML = oldPage;
+        }
+
+    </script>
+    <title></title>
+    <asp:ContentPlaceHolder runat="server" ID="HeadContent" />
+</head>
+<body style="min-width:300px">
+    <form id="formMobile" runat="server">
+        <asp:ScriptManager runat="server">
+            <Scripts>
+            </Scripts>
+        </asp:ScriptManager>
+        <header>
+            <div id="header">
+                <%--                <table style="table-layout: auto;">
+                    <tr>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <asp:Image ID="imgMainLogo" runat="server" />
+                            <div id="logo_text">
+                                <h1>
+                                    <asp:Literal ID="litOrganisationName" runat="server" Text=""></asp:Literal>
+                                    <span class="logo_colour">
+                                        <asp:Literal ID="litSystemTitle" runat="server" Text=""></asp:Literal></span></h1>
+                                <h2 style="color: #007a84;">
+                                    <asp:Literal ID="litSloganText" runat="server" Text=""></asp:Literal></h2>
+                            </div>
+                        </th>
+                    </tr>
+                </table>--%>
+                <div class="navbar-header" style="margin: auto; text-align: center; min-height:85px">
+                    <a id="logo_pos" class="navbar-brand" href="/Mobile/MobileMainMenu.aspx" >
+                        <asp:Image ID="imgMainLogo" runat="server" style="float: left; height: 85px;"/>
+                    </a>
+                    <div style="position: relative">
+                        <div id="logo">
+                            <div id="logo_text">
+                                <h1><a href="/Mobile/MobileMainMenu.aspx">
+                                    <asp:Literal ID="litOrganisationName" runat="server" Text=""></asp:Literal>
+                                    <span class="logo_colour">
+                                        <asp:Literal ID="litSystemTitle" runat="server" Text=""></asp:Literal></span></a></h1>
+                                <h2 style="color: #2E4E67;">
+                                    <asp:Literal ID="litSloganText" runat="server" Text=""></asp:Literal></h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- this is for the main menu bar -->
+                <div id="menubar">
+                    <table style="align-items: center;">
+                        <tr>
+                            <td>
+                                <asp:Button CssClass="toogleButtons" ID="btnLogout" runat="server" Text="Logout" OnClick="btnLogout_Click" Visible="false" />
+                            </td>
+                            <td align="right">
+                                <asp:Button CssClass="toogleButtons" ID="btnDesktopView" runat="server" Text="Desktop View" OnClick="btnDesktopView_Click" Visible="false" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+        </header>
+
+
+        <div id="body" >
+            <section class="content-wrapper main-content">
+                <asp:ContentPlaceHolder runat="server" ID="MainContent" />
+            </section>
+        </div>
+
+        <footer>
+            <div id="footer">
+                <asp:Literal ID="litFooterLine" runat="server" Text=""></asp:Literal><br />
+                <br />
+                <asp:Literal ID="litCopyrightLine1" runat="server" Text=""></asp:Literal><asp:Literal ID="litCopyrightLine2" runat="server" Text=""></asp:Literal>
+            </div>
+        </footer>
+
+    </form>
+</body>
+</html>

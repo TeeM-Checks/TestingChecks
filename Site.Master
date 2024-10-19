@@ -1,0 +1,223 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="NewBilletterie.SiteMaster" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <link id="mainCSSLink" runat="server" rel="stylesheet" type="text/css" />
+    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRS</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="font-awe/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- Custom CSS -->
+    <%--<link href="css/half-slider.css" rel="stylesheet">--%>
+    <link href="css/custom.css" rel="stylesheet" />
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript">
+
+        function OpenInNewTab(url) {
+            var oldPage = document.body.innerHTML;
+            var win = window.open(url, '_blank');
+            document.body.innerHTML = oldPage;
+            win.focus();
+        }
+
+        function printDiv(divID) {
+            var divElements = document.getElementById(divID).innerHTML;
+            //Get the HTML of whole page
+            var oldPage = document.body.innerHTML;
+
+            //Reset the page's HTML with div's HTML only
+            document.body.innerHTML =
+              "<html><body>" +
+              divElements + "</body>";
+
+            //Print Page
+            window.print();
+
+            //Restore 0orignal HTML
+            document.body.innerHTML = oldPage;
+        }
+
+        function uploadcomplete() {
+            alert("File(s) uploaded successfully.");
+        }
+
+        function uploadcompleteerror() {
+            alert("File(s) uploaded successfully.");
+        }
+
+    </script>
+
+    <asp:ContentPlaceHolder runat="server" ID="HeadContent" />
+
+    <%-- Corporate Branding Styles --%>
+    <link href="Styles/officeStyleCustom.css" rel="stylesheet" />
+    <link href="Images/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+</head>
+<body>
+    <form runat="server">
+        <asp:ScriptManager runat="server">
+            <Scripts>
+            </Scripts>
+        </asp:ScriptManager>
+        <header>
+            <div class="content-wrapper">
+                <div>
+                    <nav id="header" class="navbar navbar-fixed-top" role="navigation">
+                        <div>
+                            <div class="container">
+                                <!-- Brand and toggle get grouped for better mobile display -->
+                                <div class="navbar-header">
+                                    <a id="logo_pos" class="navbar-brand" href="#" style="margin-top: 0px; padding: 0px;">
+                                        <asp:Image ID="imgMainLogo" runat="server" />
+                                    </a>
+                                    <div style="position: relative">
+                                        <div id="logo">
+                                            <div id="logo_text">
+                                                <h1><a href="../Index.aspx">
+                                                    <asp:Literal ID="litOrganisationName" runat="server"></asp:Literal>
+                                                    <span class="logo_colour">
+                                                        <asp:Literal ID="litSystemTitle" runat="server"></asp:Literal></span></a></h1>
+                                                <h2 style="color: #2E4E67;">
+                                                    <asp:Literal ID="litSloganText" runat="server"></asp:Literal></h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Collect the nav links, forms, and other content for toggling -->
+                                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                                    <ul class="nav navbar-nav format-nav" style="position: absolute; top: 120px; padding-left: 110px;">
+                                        <li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnLogout" runat="server" Text="<i class='fa fa-sign-out'></i>Logout" ToolTip="Logout" Visible="false" OnClick="btnLogout_Click"></asp:Button>
+                                        </li>
+                                        <li></li>
+                                        <%--<li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnNewOfficeTicket" runat="server" Width="150px" Text="New Ticket" ToolTip="Create new ticket internally." Visible="false" OnClick="btnNewOfficeTicket_Click" />
+                                        </li>--%>
+                                        <li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnNewTicket" runat="server" Width="150px" Text="New Ticket" ToolTip="Create new ticket." Visible="false" OnClick="btnNewTicket_Click" />
+                                        </li>
+                                        <li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnViewTickets" runat="server" Width="150px" Text="View Tickets" ToolTip="View tickets." Visible="false" OnClick="btnViewTickets_Click" />
+                                        </li>
+                                       <%-- <li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnViewOfficeTickets" runat="server" Width="150px" Text="View Tickets" ToolTip="View tickets." Visible="false" OnClick="btnViewOfficeTickets_Click" />
+                                        </li>--%>
+                                        <%--<li>
+                                            <asp:Button CssClass="toogleButtons" ID="btnAdministration" runat="server" BackColor="Gray" Width="150px" Text="Administration" ToolTip="Administration settings." Visible="false" OnClick="btnAdministration_Click" />
+                                        </li>--%>
+                                        <%--<li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnFinanceRefunds" runat="server" Width="170px" Text="Process Refunds" ToolTip="Process finance refunds." Visible="false" OnClick="btnFinanceRefunds_Click" />
+                                        </li>--%>
+                                       <%-- <li>
+                                            <asp:Button CssClass="toogleButtons1" ID="btnReports" runat="server" Width="150px" Text="Reports" ToolTip="Reports" Visible="false" OnClick="btnReports_Click" />
+                                        </li>--%>
+                                        <%--<li>
+                                            <asp:Button CssClass="toogleButtons1" ID="btnFAQAdmin" runat="server" Width="150px" Text="FAQs" ToolTip="Frequently asked questions" Visible="false" OnClick="btnFAQAdmin_Click" />
+                                        </li>--%>
+                                        <li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnFAQ" runat="server" Width="150px" Text="FAQs" ToolTip="Frequently asked questions" Visible="false" OnClick="btnFAQ_Click" />
+                                        </li>
+                                       <%-- <li>
+                                            <asp:Button CssClass="toogleButtons1" ID="btnMobileView" runat="server" Width="150px" Text="Mobile View" ToolTip="Switch to mobile view" Visible="false" OnClick="btnMobileView_Click" />
+                                        </li>--%>
+                                        <%--<li>
+                                            <asp:Button CssClass="toogleButtons2" ID="btnSettings" runat="server" Width="150px" Text="Settings" ToolTip="Account and system settings internally." Visible="false" OnClick="btnSettings_Click" />
+                                        </li>--%>
+                                    </ul>
+                                </div>
+                                <!-- /.navbar-collapse -->
+                            </div>
+                            <!-- /.container -->
+                        </div>
+                    </nav>
+                </div>
+            </div>
+            <%--</div>--%>
+        </header>
+        <div id="body">
+
+            <asp:Panel runat="server" ID="pnlUserInfo" Visible="false">
+                <div class="grid" style="box-shadow: -1px 6px 6px -6px rgba(0, 0, 0, 0.35); background: #e8f1f4 none repeat scroll 0% 0%; margin-top: -11px; border-radius: 4px; padding: 5px;">
+                    <strong>
+                        <asp:LinkButton ID="lnkMasterNotice" runat="server" Text="" OnClick="lnkMasterNotice_Click" ForeColor="Red"></asp:LinkButton>
+                    </strong>
+                    <br />
+                    <div style="float: right; display: inline;">
+                        <asp:ImageButton ImageUrl="~/Images/exitIcon.png" runat="server" ID="imgExitNoticePanel" OnClick="imgExitNoticePanel_Click" Height="25" Width="25" />
+                    </div>
+                </div>
+            </asp:Panel>
+
+
+            <section class="content-wrapper main-content">
+
+                <asp:ContentPlaceHolder runat="server" ID="MainContent" />
+            </section>
+        </div>
+        <footer>
+            <div id="footer">
+                <p>
+                    <asp:Literal ID="litFooterLine" runat="server" Text=""></asp:Literal>
+                </p>
+                <p>
+                    <asp:Literal ID="litCopyrightLine1" runat="server" Text=""></asp:Literal><asp:Literal ID="litCopyrightLine2" runat="server" Text=""></asp:Literal>
+                </p>
+            </div>
+        </footer>
+    </form>
+  
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+                localStorage.setItem('activeTab', $(e.target).attr('href'));
+            });
+
+            var activeTab = localStorage.getItem('activeTab');
+
+            if (activeTab) {
+                $('#Qrstabs a[href="' + activeTab + '"]').tab('show');
+            }
+
+            if (activeTab) {
+                $('#ReportsTabs a[href="' + activeTab + '"]').tab('show');
+            }
+
+        });
+    </script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <%-- Corporate Branding Scripts --%>
+    <script src="/Scripts/bill_customise.js"></script>
+    <script src="/Scripts/bill_custom.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#datetimepicker1').datetimepicker();
+        });
+    </script>
+
+</body>
+</html>

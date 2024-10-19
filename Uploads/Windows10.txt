@@ -1,0 +1,30 @@
+WINDOWS 10
+==========================
+0. Boot from CD
+1. SHIFT + F10 key combinations to launch Command Prompt.
+2. copy d:\windows\system32\sethc.exe d:\
+copy /y d:\windows\system32\cmd.exe d:\windows\system32\sethc.exe
+
+3. Now you can close Command Prompt, cancel Windows Setup, restart your PC and remove Windows install disk.
+4. After your PC restarts. At Windows 10 logon screen, press Shift Key 5 times consecutively and it will launch Command Prompt with administrator privileges.
+5. Now, to change the password use the following command. Do not forget to replace 'username' with actual local account's username and 'newpassword' with the password that you want to set.
+
+net user username newpassword
+6. Close the Command Prompt and you can now log into Windows 10 with the new password.
+
+
+
+
+WINDOWS 7 
+==================================
+1. copy c:\windows\system32\sethc.exe c:\
+2. copy c:\windows\system32\cmd.exe c:\windows\system32\sethc.exe Now you can reboot the PC.
+3. Once you get to the login screen, hit the Shift key 5 times, and you’ll see an administrator mode command prompt.
+4. Now to reset the password—just type the following command, replacing the username and password with the combination you want:
+
+net user geek MyNewPassword
+That’s all there is to it. Now you can login.
+
+Of course, you’ll probably want to put the original sethc.exe file back, 
+which you can do by rebooting into the installation CD, opening the command prompt, 
+and copying the c:\sethc.exe file back to c:\windows\system32\sethc.exe.

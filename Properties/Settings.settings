@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="NewBilletterie.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="NewBilletterie_BilletterieAPIWS_BilletteriePrivateAPI" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://ptolemytest.cipc.co.za/BilletteriePrivateWebAPI/BilletteriePrivateAPI.asmx</Value>
+    </Setting>
+    <Setting Name="NewBilletterie_GlobalMailWS_EmailService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://ipmanual.cipc.co.za/CommunicationServices/EmailService.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

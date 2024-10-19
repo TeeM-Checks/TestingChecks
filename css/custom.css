@@ -1,0 +1,142 @@
+﻿.format-nav {
+    float: right;
+}
+
+.headline {
+    color: #79bf7f;
+    display: inline-block;
+}
+
+.headline h4 {
+    display: inline-block;
+}
+
+.nav li a {
+    color: #808080;
+}
+
+.nav li {
+    margin-right: 5px;
+}
+
+#menu-item-1, #menu-item-2 {
+    background: #52b65a;
+}
+
+#menu-item-3 {
+    background: #55bdb3;
+}
+
+
+#menu-item-4, #menu-item-6 {
+    background: #efba28;
+}
+
+#menu-item-5 {
+    background: #bf5858;
+}
+
+#menu-item-1:hover {
+    background: #3c9042;
+}
+
+#menu-item-2:hover {
+    background: #3c9042;
+}
+
+#menu-item-3:hover {
+    background: #45928b;
+}
+
+#menu-item-4:hover {
+    background: #cea124;
+}
+
+#menu-item-5:hover {
+    background: #903d3d;
+}
+
+
+#menu-item-6:hover {
+    background: #cea124;
+}
+
+.format-nav {
+    /*float: right;*/
+}
+
+.format-tab-bar li {
+    background: #75cac1;
+}
+
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    border-radius: 0px;
+    background-color: #23988d;
+}
+
+.nav > li > a:hover, .nav > li > a:focus {
+    border-radius: 0px;
+    text-decoration: none;
+    /*background-color: #6bbbb3;*/
+}
+
+.input-text {
+    width: 100%;
+    border: #ddd thin solid;
+    padding: 7px 5px;
+}
+
+.input-text:focus {
+    outline: none;
+    border: #52b65a 1px solid;
+}
+
+.row-spacing {
+    margin-bottom: 10px;
+}
+
+.tab-content {
+    padding: 15px;
+    border: #ccc thin solid;
+}
+
+.navbar-fixed-top {
+    background: #efefef;
+    box-shadow: #c5c1c1 0px 0px 10px 0px;
+}
+
+.btn-save, .btn-cancel {
+    color: #fff;
+    border: none;
+    padding: 7px 15px;
+    background: #52b65a;
+}
+
+@media (min-width: 768px) {
+    .navbar-nav > li > a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+}
+#header {
+    background-image:url('/Images/cipc_logo.jpg');
+}
+
+#overall-report table {
+  border-spacing: 50px 0;
+   border : #ccc thin solid;
+   width:100%;
+}
+
+#overall-report table thead tr > th {
+    padding: 0px 10px;
+}
+
+#overall-report table tbody tr > td {
+    padding: 0px 10px;
+}
+
+#overall-report table tbody tr:nth-of-type(even) {
+     border-bottom: #ccc thin solid;
+}
+

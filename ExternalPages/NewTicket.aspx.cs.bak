@@ -1,0 +1,1389 @@
+﻿using NewBilletterie.Classes;
+using NewBilletterie.CUBAServerService;
+using NewBilletterie.EmailWS;
+using NewBilletterie.CaseDocuments;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.ComponentModel;
+using System.Drawing;
+using AjaxControlToolkit;
+using System.Collections;
+using NewBilletterie.Classes;
+
+namespace NewBilletterie
+{
+    public partial class NewTicket : System.Web.UI.Page
+    {
+
+        public List<fileAttachmentObject> fileUploadList { get; set; }
+        public List<fileAttachmentObject> attachmentList { get; set; }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                Session["CategoryVisible"] = true;
+                Session["SubCategoryVisible"] = true;
+                Session["AttachmentList"] = null;
+
+                TypeConverter converter = TypeDescriptor.GetConverter(typeof(Color));
+
+                btnSubmitTicket.BackColor = (Color)converter.ConvertFromInvariantString(ConfigurationManager.AppSettings["ButtonBackColor"]);
+                btnSubmitTicket.ForeColor = (Color)converter.ConvertFromInvariantString(ConfigurationManager.AppSettings["ButtonForeColor"]);
+
+                //btnSaveUploadedFile.BackColor = (Color)converter.ConvertFromInvariantString(ConfigurationManager.AppSettings["ButtonBackColor"]);
+                //btnSaveUploadedFile.ForeColor = (Color)converter.ConvertFromInvariantString(ConfigurationManager.AppSettings["ButtonForeColor"]);
+
+                //btnCancelAllUpload.BackColor = (Color)converter.ConvertFromInvariantString(ConfigurationManager.AppSettings["ButtonBackColor"]);
+                //btnCancelAllUpload.ForeColor = (Color)converter.ConvertFromInvariantString(ConfigurationManager.AppSettings["ButtonForeColor"]);
+
+                Session["SelectedCATPKID"] = "0";
+                Session["MobileViewLink"] = "../Mobile/MobileNewTicket.aspx";
+
+                if (bool.Parse(ConfigurationManager.AppSettings["UseDefaultLabels"]) == false)
+                {
+                    try
+                    {
+                        litCreateNew.Text = ConfigurationManager.AppSettings["litCreateNewText"];
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
+
+                UpdateCaptchaText();
+                if (Session["userObjectCookie"] != null)
+                {
+                    userProfileObject usrSession = new userProfileObject();
+                    usrSession = (userProfileObject)Session["userObjectCookie"];
+
+                    //Check if user is coming from Password Reset session
+                    if (usrSession.OFL_PKID == 3)
+                    {
+                        Session["GlobalSession"] = null;
+                        Session["userObjectCookie"] = null;
+                        Response.Redirect("~/Index.aspx", false);
+                    }
+                }
+                else
+                {
+                    Response.Redirect("~/Index.aspx", false);
+                }
+                LoadDropDowns();
+                if (bool.Parse(ConfigurationManager.AppSettings["HideOldLinks"]))
+                {
+                    btnViewOldTickets.Visible = false;
+                }
+
+                if (bool.Parse(ConfigurationManager.AppSettings["ShowUserGroup"]))
+                {
+                    lblUserGroup.Visible = true;
+                    ddlUserGroup.Visible = true;
+                }
+            }
+
+            //if (Session["UploadError"] != null)
+            //{
+            //    lblFileUploadError.Text = Session["UploadError"].ToString();   // Session["UploadError"] = uploadError;
+            //}
+
+        }
+
+        protected void OnUploadComplete(object sender, AjaxFileUploadEventArgs e)
+        {
+            //try
+            //{
+            //    string uploadError = ValidateFileBeforeUpload(e.ContentType, e.FileName, e.FileSize);
+            //    if (uploadError == "")
+            //    {
+            //        string fileName = Path.GetFileName(e.FileName);
+            //        AjaxFileUpload11.SaveAs(Server.MapPath("~/Uploads/" + fileName));
+            //    }
+            //    else
+            //    {
+            //        ScriptManager.RegisterStartupScript(Page, this.GetType(), "str", "<script language='javascript' type='text/javascript'> alert('" + uploadError + "'); </script>", false);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    //Response.Write("<script language='javascript'> alert(' problem');</script>");
+            //    ScriptManager.RegisterStartupScript(Page, this.GetType(), "str", "<script language='javascript' type='text/javascript'> alert('" + ex.Message + "'); </script>", false);
+            //}
+        }
+
+        //1
+
+        #region Custom Methods
+
+        private void UpdateCaptchaText()
+        {
+
+            txtCaptchaText.Text = string.Empty;
+            lblStatus.Visible = false;
+            Session["BillCaptcha"] = Guid.NewGuid().ToString().Substring(0, 6);
+        }
+
+        private void LoadDropDowns()
+        {
+            DataAccess da = new DataAccess();
+            DataSet dsDepartment = new DataSet();
+            dsDepartment = da.GetGenericBilletterieDataSet("TB_CAT_Category", "TB_CAT_CategoryDS", "select 0 [CAT_PKID], 0 [CAT_Order], '' [CAT_CategoryName], '' CAT_ShortName from TB_CAT_Category where CAT_MasterID = 0 and STS_PKID = 50 and CAT_Visible = 1   union select CAT_PKID, CAT_Order, CAT_CategoryName, CAT_ShortName from TB_CAT_Category where CAT_MasterID = 0 and STS_PKID = 50 and CAT_Visible = 1 order by CAT_ShortName asc");
+            if (dsDepartment != null)
+            {
+                ddlDepartment.DataSource = dsDepartment.Tables[0];
+                ddlDepartment.DataTextField = "CAT_ShortName";
+                ddlDepartment.DataValueField = "CAT_PKID";
+                ddlDepartment.DataBind();
+            }
+
+            Common cm = new Common();
+            SelectStringResponseObject selResp = new SelectStringResponseObject();
+            selResp = da.GetBilletterieGenericScalar("select top 1 (select ', ' + AMT_Extention  from TB_AMT_AllowedMimeType T ORDER BY T.AMT_PKID FOR XML PATH('')) [Escalation List]  from TB_AMT_AllowedMimeType where STS_PKID = 60");
+            lblAllowedExtentions.Text = "Allowed extentions " + cm.CleanUpValues(selResp.selectedPKID);
+
+
+            if (Session["userObjectCookie"] != null)
+            {
+                userProfileObject usrSession = new userProfileObject();
+                usrSession = (userProfileObject)Session["userObjectCookie"];
+
+                DataSet dsUserGroup = new DataSet();
+                dsUserGroup = da.GetGenericBilletterieDataSet("TB_USG_UserGroup", "TB_USG_UserGroupDS", "select USG_PKID, USG_UserGroupName from TB_USG_UserGroup where USG_PKID = " + usrSession.USG_PKID);
+                if (dsUserGroup != null)
+                {
+                    ddlUserGroup.DataSource = dsUserGroup.Tables[0];
+                    ddlUserGroup.DataTextField = "USG_UserGroupName";
+                    ddlUserGroup.DataValueField = "USG_PKID";
+                    ddlUserGroup.DataBind();
+                }
+
+                ddlUserGroup.SelectedIndex = 0;
+            }
+
+
+
+
+        }
+
+        private bool PopulateCategoryDDL(string masterPKID)
+        {
+            bool returnValue = false;
+            DataAccess da = new DataAccess();
+            DataSet dsCategory = new DataSet();
+            dsCategory = da.GetGenericBilletterieDataSet("TB_CAT_Category", "TB_CAT_CategoryDS", "select 0 [CAT_PKID], 0 [CAT_Order], '' [CAT_CategoryName], '' CAT_ShortName from TB_CAT_Category where CAT_MasterID = " + masterPKID + " and STS_PKID = 50 and CAT_Visible = 1 union select CAT_PKID, CAT_Order, CAT_CategoryName, CAT_ShortName from TB_CAT_Category where CAT_MasterID = " + masterPKID + " and STS_PKID = 50 and CAT_Visible = 1 order by CAT_ShortName asc");
+            if (dsCategory != null)
+            {
+                if (dsCategory.Tables[0].Rows.Count > 1)
+                {
+                    ddlCategory.DataSource = dsCategory.Tables[0];
+                    ddlCategory.DataTextField = "CAT_ShortName";
+                    ddlCategory.DataValueField = "CAT_PKID";
+                    ddlCategory.DataBind();
+                    returnValue = true;
+                    Session["CategoryVisible"] = true;
+                }
+                else
+                {
+                    returnValue = false;
+                }
+            }
+            else
+            {
+                returnValue = false;
+            }
+
+            return returnValue;
+        }
+
+        private bool PopulateSubCategoryDDL(string masterPKID)
+        {
+            bool returnValue = false;
+            DataAccess da = new DataAccess();
+            DataSet dsSubCategory = new DataSet();
+            dsSubCategory = da.GetGenericBilletterieDataSet("TB_CAT_Category", "TB_CAT_CategoryDS", "select 0 [CAT_PKID], 0 [CAT_Order], '' [CAT_CategoryName], '' CAT_ShortName from TB_CAT_Category where CAT_MasterID = " + masterPKID + " and STS_PKID = 50 and CAT_Visible = 1  union select CAT_PKID, CAT_Order, CAT_CategoryName, CAT_ShortName from TB_CAT_Category where CAT_MasterID = " + masterPKID + " and STS_PKID = 50 and CAT_Visible = 1 order by CAT_ShortName asc");
+            if (dsSubCategory != null)
+            {
+                if (dsSubCategory.Tables[0].Rows.Count > 1)
+                {
+                    ddlSubCategory.DataSource = dsSubCategory.Tables[0];
+                    ddlSubCategory.DataTextField = "CAT_ShortName";
+                    ddlSubCategory.DataValueField = "CAT_PKID";
+                    ddlSubCategory.DataBind();
+                    returnValue = true;
+                    Session["SubCategoryVisible"] = true;
+                }
+                else
+                {
+                    returnValue = false;
+                }
+            }
+            else
+            {
+                returnValue = false;
+            }
+
+            return returnValue;
+        }
+
+        private string GetDefaultPriority(string catPKID)
+        {
+            string returnValue = "";
+            DataAccess da = new DataAccess();
+            SelectStringResponseObject resp = new SelectStringResponseObject();
+            resp = da.GetBilletterieGenericScalar("select TPT_PKID from TB_CAT_Category where CAT_PKID = " + catPKID);
+            if (resp.noError)
+            {
+                returnValue = resp.selectedPKID;
+            }
+            else
+            {
+                //Error handling
+                returnValue = "0";
+            }
+            return returnValue;
+
+        }
+
+        private string ValidateFileBeforeUpload(string uploadMimeType, string uploadFileName, int uploadFileSize)
+        {
+            Common cm = new Common();
+            string returnValue = "";
+            try
+            {
+                if (!cm.ValidMimeType(uploadMimeType, Path.GetExtension(uploadFileName)))
+                {
+                    returnValue = "File type not supported.";
+                }
+
+                if (!cm.ValidFileSize(uploadFileSize))
+                {
+                    returnValue = "File is too large.";
+                }
+            }
+            catch (Exception ex)
+            {
+                returnValue = ex.Message;
+            }
+            return returnValue;
+        }
+
+        private string ValidateFileBeforeUpload()
+        {
+            Common cm = new Common();
+            string returnValue = "";
+            try
+            {
+                if (fupAttachFile.HasFile == true)
+                {
+                    if (!cm.ValidMimeType(fupAttachFile.PostedFile.ContentType, Path.GetExtension(fupAttachFile.FileName)))
+                    {
+                        return returnValue = "File type '" + Path.GetExtension(fupAttachFile.FileName) + "' is not supported.";
+                    }
+                    if (fupAttachFile.FileBytes.Length > Int32.Parse(ConfigurationManager.AppSettings["MaxUploadSize"]))
+                    {
+                        return returnValue = "File '" + Path.GetFileName(fupAttachFile.FileName) + "' is too large. Max file size is 8MB.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                returnValue = ex.Message;
+            }
+            return returnValue;
+        }
+
+        private ticketObject PopulateTicketObject()
+        {
+            ticketObject returnValue = new ticketObject();
+            try
+            {
+                if (Session["userObjectCookie"] != null)
+                {
+                    //Populate ticket user ID
+                    userProfileObject usrSession = new userProfileObject();
+                    usrSession = (userProfileObject)Session["userObjectCookie"];
+                    returnValue.USR_PKID = usrSession.USR_PKID;
+
+                    returnValue.UST_PKID = 1;
+
+                    #region Populate file attachments
+                    //Common cm = new Common();
+                    //try
+                    //{
+                    //    cm.CleanUpTempFiles(returnValue.USR_PKID);
+                    //}
+                    //catch (Exception)
+                    //{
+
+                    //}
+
+                    //fileAttachmentObject atchObj = new fileAttachmentObject();
+                    //if (fupAttachFile.HasFile == true)
+                    //{
+                    //    atchObj.DCM_OriginalName = fupAttachFile.FileName;
+                    //    atchObj.AttachmentSize = fupAttachFile.FileBytes.Length;
+                    //    atchObj.MimeType = fupAttachFile.PostedFile.ContentType;
+                    //    atchObj.DCM_Extention = Path.GetExtension(fupAttachFile.FileName);
+                    //    atchObj.DCM_DerivedName = "doc" + returnValue.USR_PKID.ToString() + Path.GetExtension(fupAttachFile.FileName);
+                    //    atchObj.DCT_PKID = 1;
+                    //    atchObj.DCS_PKID = 1;
+                    //    atchObj.DCL_PKID = 1;
+                    //    atchObj.DCM_DocumentPath = ConfigurationManager.AppSettings["LocalDocumentsTempPath"] + atchObj.DCM_DerivedName;  //Server.MapPath("~/Temp/" + atchObj.DCM_DerivedName);
+                    //    atchObj.STS_PKID = 30;
+
+                    //    string filePath = ConfigurationManager.AppSettings["LocalDocumentsTempPath"] + atchObj.DCM_DerivedName; //Server.MapPath("~/Temp/" + atchObj.DCM_DerivedName);
+                    //    fupAttachFile.SaveAs(filePath);
+
+                    //    returnValue.AttachedFile = atchObj;
+                    //    returnValue.TCK_HasFile = true;
+                    //}
+                    //else
+                    //{
+                    //    returnValue.AttachedFile = null;
+                    //}
+                    Common cm = new Common();
+                    cm.CleanUpTempFiles(returnValue.USR_PKID);
+
+                    fileAttachmentObject atchObj = new fileAttachmentObject();
+                    if (fupAttachFile.HasFile == true)
+                    {
+                        atchObj.DCM_OriginalName = fupAttachFile.FileName;
+                        atchObj.AttachmentSize = fupAttachFile.FileBytes.Length;
+                        atchObj.MimeType = fupAttachFile.PostedFile.ContentType;
+                        atchObj.DCM_Extention = Path.GetExtension(fupAttachFile.FileName);
+                        atchObj.DCM_DerivedName = "doc" + returnValue.USR_PKID.ToString() + Path.GetExtension(fupAttachFile.FileName);
+                        atchObj.DCT_PKID = 1;
+                        atchObj.DCS_PKID = 1;
+                        atchObj.DCL_PKID = 1;
+                        atchObj.DCM_DocumentPath = ConfigurationManager.AppSettings["LocalDocumentsTempPath"] + atchObj.DCM_DerivedName;  //Server.MapPath("~/Temp/" + atchObj.DCM_DerivedName);
+                        atchObj.STS_PKID = 30;
+
+                        string filePath = ConfigurationManager.AppSettings["LocalDocumentsTempPath"] + atchObj.DCM_DerivedName; //Server.MapPath("~/Temp/" + atchObj.DCM_DerivedName);
+                        fupAttachFile.SaveAs(filePath);
+
+                        returnValue.AttachedFile = atchObj;
+                        returnValue.TCK_HasFile = true;
+                    }
+                    else
+                    {
+                        returnValue.AttachedFile = null;
+                    }
+
+                    #endregion
+
+                    #region Populate file attachments
+
+                    //Common cm = new Common();
+                    //try
+                    //{
+                    //    cm.CleanUpTempFiles(returnValue.USR_PKID);
+                    //}
+                    //catch (Exception)
+                    //{
+
+                    //}
+
+                    //fileAttachmentObject singleObj = new fileAttachmentObject();
+                    //if (fupAttachFile.HasFile == true)
+                    //{
+                    //ArrayList appAr = new ArrayList();
+                    //List<fileAttachmentObject> attachList = new List<fileAttachmentObject>();
+                    //if (Session["AttachmentList"] != null)
+                    //{
+
+                    //    attachList = (List<fileAttachmentObject>)Session["AttachmentList"];
+                    //    fileAttachmentObject atchObj = new fileAttachmentObject();
+                    //    for (int i = 0; i < attachList.Count; i++)
+                    //    {
+                    //        atchObj.DCM_OriginalName = attachList[i].DCM_OriginalName;   // = attachList fupAttachFile.FileName;
+                    //        atchObj.AttachmentSize = attachList[i].AttachmentSize;   // = fupAttachFile.FileBytes.Length;
+                    //        atchObj.MimeType = attachList[i].MimeType;   // = fupAttachFile.PostedFile.ContentType;
+                    //        atchObj.DCM_Extention = attachList[i].DCM_Extention; // = Path.GetExtension(fupAttachFile.FileName);
+                    //        atchObj.DCM_DerivedName = "doc" + returnValue.USR_PKID.ToString() + "_" + i.ToString() + "_" + Path.GetExtension(attachList[i].DCM_OriginalName);
+                    //        atchObj.DCT_PKID = 1;    
+                    //        atchObj.DCS_PKID = 1;
+                    //        atchObj.DCL_PKID = 1;
+                    //        atchObj.DCM_DocumentPath = ConfigurationManager.AppSettings["LocalDocumentsTempPath"] + attachList[i].DCM_DerivedName;  //Server.MapPath("~/Temp/" + atchObj.DCM_DerivedName);
+                    //        atchObj.STS_PKID = 30;  
+
+                    //        string filePath = ConfigurationManager.AppSettings["LocalDocumentsTempPath"] + attachList[i].DCM_DerivedName; //Server.MapPath("~/Temp/" + atchObj.DCM_DerivedName);
+                    //        fupAttachFile.SaveAs(filePath);
+
+                    //        returnValue.AttachedFile = atchObj;
+                    //        returnValue.TCK_HasFile = true;
+                    //        appAr.Add(atchObj);
+                    //        atchObj = new fileAttachmentObject();
+                    //    }
+                    //    returnValue.AttachedFiles = new fileAttachmentObject[appAr.Count];
+                    //    appAr.CopyTo(returnValue.AttachedFiles);
+                    //    appAr.Clear();
+                    //}
+                    //else
+                    //{
+                    //    returnValue.AttachedFiles = null;
+                    //}
+                    #endregion
+
+                    //Populate selected category
+                    if (ddlSubCategory.Visible == true)
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(ddlSubCategory.SelectedValue);
+                    }
+                    else if (ddlCategory.Visible == true)
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(ddlCategory.SelectedValue);
+                    }
+                    else if (ddlDepartment.Visible == true)
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(ddlDepartment.SelectedValue);
+                    }
+
+                    if (Session["SelectedCATPKID"] != null)
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(Session["SelectedCATPKID"].ToString());
+                    }
+
+                    if (bool.Parse(Session["SubCategoryVisible"].ToString()) == true)
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(ddlSubCategory.SelectedValue);
+                    }
+                    else if (bool.Parse(Session["CategoryVisible"].ToString()) == true)
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(ddlCategory.SelectedValue);
+                    }
+                    else if (ddlDepartment.SelectedValue != "")
+                    {
+                        returnValue.CAT_PKID = Int32.Parse(ddlDepartment.SelectedValue);
+                    }
+
+                    returnValue.OFC_PKID = 0;
+                    returnValue.TCK_TicketNumber = "";
+                    returnValue.TCK_Subject = txtTicketSubject.Text.Trim();
+                    returnValue.TCK_Reference = txtReferenceNo.Text.Trim();
+                    returnValue.TCK_Message = txtTicketMessage.Text.Trim();
+                    if (Session["preferredEmail"] != null)
+                    {
+                        returnValue.TCK_AlternateEmail = Session["preferredEmail"].ToString();
+                    }
+                    else
+                    {
+                        returnValue.TCK_AlternateEmail = usrSession.USR_EmailAccount;
+                    }
+                    returnValue.CAT_RequireAttachment = cm.GetCategoryAttachmentRequirenet(returnValue.CAT_PKID);
+                    returnValue.STS_PKID = 1;
+                    return returnValue;
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return returnValue;
+
+            //if (ddlSubCategory.Visible == true)
+            //{
+            //    returnValue.CAT_PKID = Int32.Parse(ddlSubCategory.SelectedValue);
+            //}
+            //else if (ddlCategory.Visible == true)
+            //{
+            //    returnValue.CAT_PKID = Int32.Parse(ddlCategory.SelectedValue);
+            //}
+            //else if (ddlDepartment.Visible == true)
+            //{
+            //    returnValue.CAT_PKID = Int32.Parse(ddlDepartment.SelectedValue);
+            //}
+            //returnValue.OFC_PKID = 0;
+            //returnValue.TCK_TicketNumber = "";
+            //returnValue.TCK_Subject = txtTicketSubject.Text.Trim();
+            //returnValue.TCK_Reference = txtReferenceNo.Text.Trim();
+            //returnValue.TCK_Message = txtTicketMessage.Text.Trim();
+            //if (Session["preferredEmail"] != null)
+            //{
+            //    returnValue.TCK_AlternateEmail = Session["preferredEmail"].ToString();
+            //}
+            //else
+            //{
+            //    returnValue.TCK_AlternateEmail = usrSession.USR_EmailAccount;
+            //}
+            //returnValue.CAT_RequireAttachment = cm.GetCategoryAttachmentRequirenet(returnValue.CAT_PKID);
+            //returnValue.STS_PKID = 1;
+            //return returnValue;
+            //    }
+            //}
+
+        }
+
+        private string GenerateTicketNumber(string tickID)
+        {
+            string returnValue = "";
+            try
+            {
+                userProfileObject usrSession = new userProfileObject();
+                usrSession = (userProfileObject)Session["userObjectCookie"];
+
+                if (usrSession != null)
+                {
+                    returnValue = usrSession.USR_PKID.ToString();
+                }
+                else
+                {
+                    returnValue = GetUserIDFromTicket(tickID);
+                }
+
+                returnValue = returnValue + DateTime.Now.Year.ToString();
+                returnValue = returnValue + DateTime.Now.Month.ToString("D2");
+                returnValue = returnValue + "T";
+                returnValue = returnValue + tickID;
+            }
+            catch (Exception ex)
+            {
+                //EmailDispatcherService emsWS = new EmailDispatcherService();;
+                //EmailMessageObject emlObj = new EmailMessageObject();
+                //emlObj = PopulateErrorEmailObject("GenerateTicketNumber", ex.Message, tickID);
+                //emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+            }
+            return returnValue;
+        }
+
+        private string GetUserIDFromTicket(string tckPKID)
+        {
+            DataAccess da = new DataAccess();
+            SelectStringResponseObject selObj = new SelectStringResponseObject();
+            selObj = da.GetBilletterieGenericIntScalar("select USR_PKID from TB_TCK_Ticket where TCK_PKID = " + tckPKID);
+            string returnValue = selObj.selectedPKID;
+
+            return returnValue;
+        }
+
+        private NewBilletterie.EmailWS.EmailMessageObject PopulateEmailObject(ticketObject tckObj)
+        {
+            NewBilletterie.EmailWS.EmailMessageObject returnValue = new NewBilletterie.EmailWS.EmailMessageObject();
+
+            returnValue.EML_ToEmailAdmin = tckObj.TCK_AlternateEmail;
+            returnValue.EML_ToEmailList = tckObj.TCK_AlternateEmail;
+            returnValue.EML_FromEmail = ConfigurationManager.AppSettings["From"];
+            returnValue.EML_Subject = ConfigurationManager.AppSettings["Subject"] + ":" + tckObj.TCK_Subject;
+            returnValue.EML_MailBody = GetConfirmationEmailBody(tckObj);
+            returnValue.EML_SMTPServer = ConfigurationManager.AppSettings["SMTPServer"];
+            returnValue.EML_SMTPPassword = ConfigurationManager.AppSettings["smtUserPass"];
+            returnValue.EML_EmailDate = DateTime.Now.ToString("yyyy-MM-dd HH':'mm':'ss");
+            returnValue.EML_Status = "1";
+            returnValue.EML_CCEmail = ConfigurationManager.AppSettings["bcc"];
+            returnValue.EML_KeyField = "TCK_PKID";
+            returnValue.EML_KeyValue = tckObj.TCK_PKID.ToString();
+            returnValue.EML_Domain = "0";
+            returnValue.EML_SupportToEmail = ConfigurationManager.AppSettings["ToCIPC"];
+
+            return returnValue;
+        }
+
+        private string GetConfirmationEmailBody(ticketObject tckObj)
+        {
+            string returnValue = "";
+            returnValue = "<table border='1' frame='vsides' rules='cols'><tr style='border:none; width:100%; height:10px; padding:0px; background-color:#007073; color: #E4EC04;'><td><h3>Ticket # [ T" + tckObj.TCK_PKID + " ] has been successfully submitted.</h3></td></tr> ";
+            returnValue = returnValue + "<tr style='font-size:13px; border:inherit; width:100%; height:5px; padding:0px; background-color: lightgray;'><td><h4>Subject : " + tckObj.TCK_Subject + "</h4></td></tr>";
+            returnValue = returnValue + "<tr style='font-size: 13px; background-color: white;'><td><br/>Date :" + tckObj.TCK_DateCreated + "<br/><p>Dear " + ConfigurationManager.AppSettings["OrganisationName"] + " Client,<br/></p></td></tr>";
+            returnValue = returnValue + "<tr style='font-size: 13px; background-color: white;'><td>Thank you for submitting your query using " + ConfigurationManager.AppSettings["OrganisationName"] + " " + ConfigurationManager.AppSettings["SystemTitle"] + " system.<br /><br /></td></tr>";
+            returnValue = returnValue + "<tr style='font-size: 13px; background-color: white;'><td><table style='margin-left:10px; border-collapse: collapse;'><tr style='border: none;'><td style='border-left:  solid 3px blue; min-height:30px; color: green;'><i>" + tckObj.TCK_Message.Replace("\n", "<br />") + "</i></td></tr></table><br /><br /></td></tr>";
+            returnValue = returnValue + "<tr style='font-size: 13px; background-color: white;'><td>Note that any attached documents are ONLY accessible through the help desk system. Please quote this ticket number for any further correspondence regarding this query.<br /><br />This email serves as confirmation of receipt of query only. Another email will be sent upon resolving or progress update thereof.<br/><br/></td></tr>";
+            returnValue = returnValue + "<tr style='font-size: 13px; background-color: white;'><td>Please note that this is an automated mail response. Please do NOT reply to this message as it is sent from an unattended mailbox. <br /><br />Best Regards,<br/><br/>" + ConfigurationManager.AppSettings["OrganisationName"] + " Support Team<br/><br/></td></tr>";
+            returnValue = returnValue + "<tr style='border:inherit; width:100%; height:10px; padding:0px; background-color:#007073;'><td></td></tr></table>";
+
+            return returnValue;
+        }
+
+        private void UpdateTicketDueDate(string ticketPKID)
+        {
+            DataAccess da = new DataAccess();
+            DataSet ds = new DataSet();
+            ds = da.GetGenericBilletterieDataSet("TB_SVL_ServiceLevel", "TB_SVL_ServiceLevelDS", "select V.SVL_Hours, T.TCK_DateCreated from TB_TCK_Ticket T inner join TB_CAT_Category C on T.CAT_PKID = C.CAT_PKID inner join TB_SVL_ServiceLevel V on C.SVL_PKID = V.SVL_PKID where TCK_PKID = " + ticketPKID);
+            if (ds != null)
+            {
+                if (ds.Tables[0].Rows.Count > 0)
+                {
+                    DateTime newCalculatedDate = DateTime.Parse(ds.Tables[0].Rows[0]["TCK_DateCreated"].ToString()).AddHours(double.Parse(ds.Tables[0].Rows[0]["SVL_Hours"].ToString()));
+                    string newDateString = "";
+                    if (bool.Parse(ConfigurationManager.AppSettings["GetCalculatedDates"]))
+                    {
+                        ServerServices svrWS = new ServerServices();
+                        svrWS.Url = ConfigurationManager.AppSettings["CUBAServerServiceURL"];
+
+                        DataSet fbdDS = new DataSet();
+                        fbdDS = svrWS.GetGenericDataSet("select * from TB_FBD_ForbiddenDates where FBD_Year = " + DateTime.Now.Year.ToString() + " and FBD_ForbiddenDate between '" + DateTime.Parse(ds.Tables[0].Rows[0]["TCK_DateCreated"].ToString()).ToString("yyyy-MM-dd") + "' and '" + newCalculatedDate.ToString("yyyy-MM-dd") + "'", ConfigurationManager.AppSettings["serviceKey"]);
+                        double daysIncrease = 0;
+                        if (fbdDS != null)
+                        {
+                            if (fbdDS.Tables[0].Rows.Count > 0)
+                            {
+                                daysIncrease = fbdDS.Tables[0].Rows.Count * 24;
+                            }
+                        }
+                        newCalculatedDate = newCalculatedDate.AddHours(daysIncrease);
+                        newDateString = GetAllowedOfficeDate(newCalculatedDate.ToString("yyyy-MM-dd"));
+                        da.UpdateGenericBilletterieRecord("update TB_TCK_Ticket set TCK_DateDue = '" + newDateString + "' where TCK_PKID = " + ticketPKID);
+                    }
+                    else
+                    {
+                        //newDateString = GetAllowedOfficeDate(newCalculatedDate.ToString("yyyy-MM-dd"));
+                        newDateString = GetFormattedOfficeDate(newCalculatedDate.ToString("yyyy-MM-dd"));
+                        da.UpdateGenericBilletterieRecord("update TB_TCK_Ticket set TCK_DateDue = '" + newDateString + "' where TCK_PKID = " + ticketPKID);
+
+                    }
+                }
+            }
+        }
+
+        private NewBilletterie.EmailWS.EmailMessageObject PopulateErrorEmailObject(string errorMethod, string errorMessage, string valueID)
+        {
+            NewBilletterie.EmailWS.EmailMessageObject returnValue = new NewBilletterie.EmailWS.EmailMessageObject();
+
+            returnValue.EML_ToEmailAdmin = ConfigurationManager.AppSettings["FailureAddress"];
+            returnValue.EML_ToEmailList = ConfigurationManager.AppSettings["FailureAddress"];
+            returnValue.EML_FromEmail = ConfigurationManager.AppSettings["From"];
+            returnValue.EML_Subject = "Error in method: " + errorMethod;
+            returnValue.EML_MailBody = "Dear System Administrator.<br /><br /> Billetterie has generated the following error. <br /><br /> Please urgently attend to it." + errorMessage;
+            returnValue.EML_SMTPServer = ConfigurationManager.AppSettings["SMTPServer"];
+            returnValue.EML_SMTPPassword = ConfigurationManager.AppSettings["smtUserPass"];
+            returnValue.EML_EmailDate = DateTime.Now.ToString("yyyy-MM-dd HH':'mm':'ss");
+            returnValue.EML_Status = "1";
+            returnValue.EML_CCEmail = ConfigurationManager.AppSettings["bcc"];
+            returnValue.EML_KeyField = "QRS_ERROR";
+            returnValue.EML_KeyValue = valueID;
+            returnValue.EML_Domain = "0";
+            returnValue.EML_SupportToEmail = ConfigurationManager.AppSettings["ToCIPC"];
+
+            return returnValue;
+        }
+
+        #endregion
+
+        #region Control Events
+
+        protected void btnNewCaptcha_Click(object sender, EventArgs e)
+        {
+            UpdateCaptchaText();
+        }
+
+        protected void lnkAttachFiles_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ScriptManager.RegisterStartupScript(Page, this.GetType(), "str", "<script language='javascript' type='text/javascript'>document.getElementById(\"imageUploadRow\").style.visibility = \"visible\";document.getElementById(\"AjaxFileUpload11\").style.visibility = \"visible\";</script>", false);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
+        protected void lnkDeleteAttachedFiles_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ScriptManager.RegisterStartupScript(Page, this.GetType(), "str", "<script language='javascript' type='text/javascript'>document.getElementById(\"imageUploadRow\").style.visibility = \"collapse\";</script>", false);
+                fupAttachFile = new FileUpload();
+            }
+            catch (Exception)
+            {
+
+            }
+
+        }
+
+        protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddlDepartment.SelectedValue != "" && ddlDepartment.SelectedValue != "0")
+            {
+                //Populate category depending on selected department
+                bool displayCategory = false;
+                displayCategory = PopulateCategoryDDL(ddlDepartment.SelectedValue);
+
+                if (bool.Parse(ConfigurationManager.AppSettings["displayCategoryToolTip"]))
+                {
+                    Common cm = new Common();
+                    string toolTipMessage = cm.GetToolTipMessage(ddlDepartment.SelectedValue);
+                    if (toolTipMessage.Trim() != "")
+                    {
+                        lblCategoryToolTip.Text = toolTipMessage;
+                        deptToolTipDisplayRow.Visible = true;
+                        deptToolTipDisplayRowEmpty.Visible = true;
+                    }
+                    else
+                    {
+                        lblCategoryToolTip.Text = "";
+                        deptToolTipDisplayRow.Visible = false;
+                        deptToolTipDisplayRowEmpty.Visible = false;
+                    }
+                }
+                else
+                {
+                    lblCategoryToolTip.Text = "";
+                    deptToolTipDisplayRow.Visible = false;
+                    deptToolTipDisplayRowEmpty.Visible = false;
+                }
+
+                Session["SelectedCATPKID"] = ddlDepartment.SelectedValue;
+
+
+                lblDDLCategory.Visible = displayCategory;
+                ddlCategory.Visible = displayCategory;
+
+                lblDDLSubCategory.Visible = false;
+                ddlSubCategory.Visible = false;
+            }
+            else
+            {
+                lblDDLCategory.Visible = false;
+                ddlCategory.Visible = false;
+
+                lblDDLSubCategory.Visible = false;
+                ddlSubCategory.Visible = false;
+            }
+        }
+
+        protected void ddlCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddlCategory.SelectedValue != "")
+            {
+                //Common cm = new Common();
+                //Populate category depending on selected department
+                bool displaySubCategory = false;
+                displaySubCategory = PopulateSubCategoryDDL(ddlCategory.SelectedValue);
+
+                //string toolTipMessage = GetToolTipMessage(ddlCategory.SelectedValue);
+                //lblDepartmentDescription.Text = toolTipMessage;
+                //deptToolTipDisplayRow.Visible = true;
+                //deptToolTipDisplayRowEmpty.Visible = true;
+
+                if (bool.Parse(ConfigurationManager.AppSettings["displayCategoryToolTip"]))
+                {
+                    Common cm = new Common();
+                    string toolTipMessage = cm.GetToolTipMessage(ddlCategory.SelectedValue);
+                    if (toolTipMessage.Trim() != "")
+                    {
+                        lblCategoryToolTip.Text = toolTipMessage;
+                        deptToolTipDisplayRow.Visible = true;
+                        deptToolTipDisplayRowEmpty.Visible = true;
+                    }
+                    else
+                    {
+                        lblCategoryToolTip.Text = "";
+                        deptToolTipDisplayRow.Visible = false;
+                        deptToolTipDisplayRowEmpty.Visible = false;
+                    }
+                }
+                else
+                {
+                    lblCategoryToolTip.Text = "";
+                    deptToolTipDisplayRow.Visible = false;
+                    deptToolTipDisplayRowEmpty.Visible = false;
+                }
+
+                Session["SelectedCATPKID"] = ddlCategory.SelectedValue;
+
+                lblDDLSubCategory.Visible = displaySubCategory;
+                ddlSubCategory.Visible = displaySubCategory;
+            }
+            else
+            {
+                lblDDLSubCategory.Visible = false;
+                ddlSubCategory.Visible = false;
+            }
+        }
+
+        protected void ddlSubCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddlSubCategory.SelectedValue != "")
+            {
+                //string toolTipMessage = GetToolTipMessage(ddlSubCategory.SelectedValue);
+                //lblDepartmentDescription.Text = toolTipMessage;
+                //deptToolTipDisplayRow.Visible = true;
+                //deptToolTipDisplayRowEmpty.Visible = true;
+
+                if (bool.Parse(ConfigurationManager.AppSettings["displayCategoryToolTip"]))
+                {
+                    Common cm = new Common();
+                    string toolTipMessage = cm.GetToolTipMessage(ddlSubCategory.SelectedValue);
+                    if (toolTipMessage.Trim() != "")
+                    {
+                        lblCategoryToolTip.Text = toolTipMessage;
+                        deptToolTipDisplayRow.Visible = true;
+                        deptToolTipDisplayRowEmpty.Visible = true;
+                    }
+                    else
+                    {
+                        lblCategoryToolTip.Text = "";
+                        deptToolTipDisplayRow.Visible = false;
+                        deptToolTipDisplayRowEmpty.Visible = false;
+                    }
+                }
+                else
+                {
+                    lblCategoryToolTip.Text = "";
+                    deptToolTipDisplayRow.Visible = false;
+                    deptToolTipDisplayRowEmpty.Visible = false;
+                }
+
+                Session["SelectedCATPKID"] = ddlSubCategory.SelectedValue;
+            }
+        }
+
+        protected void btnSubmitTicket_Click(object sender, EventArgs e)
+        {
+            if (txtCaptchaText.Text.Trim() == Session["BillCaptcha"].ToString())
+            {
+                DataAccess da = new DataAccess();
+                Common cm = new Common();
+                string errMessage = "";
+                ticketObject tickObj = new ticketObject();
+                NewBilletterie.EmailWS.OperationResponseObject opResp = new NewBilletterie.EmailWS.OperationResponseObject();
+                errMessage = ValidateFileBeforeUpload();
+                if (errMessage == "")
+                {
+                    tickObj = PopulateTicketObject();
+                    errMessage = cm.ValidateInput(tickObj);
+                    if (errMessage == "")
+                    {
+                        NewBilletterie.Classes.InsertResponseObject insResp = new NewBilletterie.Classes.InsertResponseObject();
+                        UpdateResponseObject updResp = new UpdateResponseObject();
+                        //Save ticket
+                        insResp = da.InsertBilletterieTicketRecord(tickObj);
+                        if (!insResp.noError)
+                        {
+                            //Show error message
+                            lblMainErrorMessage.Text = "[" + insResp.errorMessage + "]";
+                        }
+                        else
+                        {
+                            //Update ticket number
+                            string insertedPKID = insResp.insertedPKID;
+                            tickObj.TCK_PKID = Int32.Parse(insertedPKID);
+                            tickObj.TCK_DateCreated = DateTime.Now.ToString();
+
+                            if (tickObj.AttachedFile != null)
+                            {
+                                //Save document
+                                insResp = da.InsertBilletterieDocumentRecord(tickObj.AttachedFile);
+                                string destFile = cm.MoveDocuments(tickObj.AttachedFile.DCM_DocumentPath, insResp.insertedPKID.ToString());
+                                updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), destFile, insertedPKID);
+                            }
+
+                            string ticketNumber = GenerateTicketNumber(insertedPKID);
+
+                            updResp = da.UpdateBilletterieTicketRecord(insertedPKID, ticketNumber);
+
+                            tickObj.TCK_TicketNumber = ticketNumber;
+
+                            //Update if file has been attached from external
+                            if (tickObj.TCK_HasFile == true)
+                            {
+                                da.UpdateGenericBilletterieRecord("update TB_TCK_Ticket set TKR_HasFile = 1 where TCK_PKID = " + insertedPKID);
+                            }
+
+                            if (bool.Parse(ConfigurationManager.AppSettings["GenerateCaseForm"]))
+                            {
+                                //userProfileObject usrSession = new userProfileObject();
+                                //usrSession = (userProfileObject)Session["userObjectCookie"];
+
+                                //string docExtention = ".pdf";
+                                //string docExtention = ".pdf";
+                                //CaseDocument1 cd1 = new CaseDocument1();
+                                //CaseDocument1PDF cd1 = new CaseDocument1PDF();
+                                //cd1.CreatePackage(ConfigurationManager.AppSettings["LocalDocumentsContentPath"] + ticketNumber + docExtention, tickObj, usrSession);
+
+
+                                //fileAttachmentObject caseDocObj = new fileAttachmentObject();
+
+                                //caseDocObj.DCT_PKID = 4;
+                                //caseDocObj.DCS_PKID = 1;
+                                //caseDocObj.DCL_PKID = 1;
+                                //caseDocObj.DCM_DocumentPath = ConfigurationManager.AppSettings["LocalDocumentsContentPath"] + ticketNumber + docExtention;
+                                //caseDocObj.DCM_OriginalName = ticketNumber + docExtention;
+                                //caseDocObj.DCM_DerivedName = ticketNumber + docExtention;
+                                //caseDocObj.DCM_Extention = docExtention;
+                                //caseDocObj.STS_PKID = 30;
+
+                                //insResp = da.InsertBilletterieDocumentRecord(caseDocObj);
+                                //updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), caseDocObj.DCM_DocumentPath, insertedPKID);
+                            }
+
+                            if (!updResp.noError)
+                            {
+                                //Show error message
+                                lblMainErrorMessage.Text = "[" + updResp.errorMessage + "]";
+                            }
+                            else
+                            {
+                                tickObj.TCK_TicketNumber = ticketNumber;
+
+                                //Assign due date and auto assign if possible
+                                if (bool.Parse(ConfigurationManager.AppSettings["AutoAssignDueDate"]))
+                                {
+                                    UpdateTicketDueDate(tickObj.TCK_PKID.ToString());
+                                }
+
+                                //Send emails if configured
+                                if (bool.Parse(ConfigurationManager.AppSettings["MailNotifications"]))
+                                {
+                                    ////Send email record
+                                    //EmailDispatcherService emsWS = new EmailDispatcherService();
+                                    //NewBilletterie.EmailWS.EmailMessageObject emlObj = new NewBilletterie.EmailWS.EmailMessageObject();
+                                    //emlObj = PopulateEmailObject(tickObj);
+                                    //emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+
+                                    if (bool.Parse(ConfigurationManager.AppSettings["SendEmailOnDemand"]))
+                                    {
+                                        NewBilletterie.EmailWS.EmailMessageObject emlObj = new NewBilletterie.EmailWS.EmailMessageObject();
+                                        emlObj = PopulateEmailObject(tickObj);
+                                        SendMail sm = new SendMail();
+                                        SMTPMailResponseObject smtRespObj = new SMTPMailResponseObject();
+
+                                        #region Normal sending of emails
+                                        //smtRespObj = sm.SendSMTPMail(emlObj.EML_ToEmailAdmin, emlObj.EML_ToEmailList, emlObj.EML_FromEmail, emlObj.EML_Subject, emlObj.EML_MailBody, emlObj.EML_SMTPServer);
+                                        //if (smtRespObj.noError)
+                                        //{
+                                        //    emlObj.EML_Status = "2";
+                                        //}
+                                        //else
+                                        //{
+                                        //    emlObj.EML_Status = "1";
+                                        //}
+                                        //EmailDispatcherService emsWS = new EmailDispatcherService();
+                                        //emsWS.Url = ConfigurationManager.AppSettings["EmailWSURL"];
+                                        //opResp = emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+                                        #endregion
+
+                                        #region Asynchronous sending of email
+
+                                        int threadId;
+                                        // Create an instance of the test class.
+                                        SendMail ad = new SendMail();
+                                        // Create the delegate.
+                                        //NewBilletterie.Classes.SendMail.AsyncMethodCaller caller = new NewBilletterie.Classes.SendMail.AsyncMethodCaller(emlObj.EML_ToEmailAdmin, emlObj.EML_ToEmailList, emlObj.EML_FromEmail, emlObj.EML_Subject, emlObj.EML_MailBody, emlObj.EML_SMTPServer,0,0 );
+                                        NewBilletterie.Classes.SendMail.AsyncMethodCaller caller = new NewBilletterie.Classes.SendMail.AsyncMethodCaller(ad.SendSMTPMailAsync);
+                                        // Initiate the asychronous call.
+                                        IAsyncResult result = caller.BeginInvoke(emlObj.EML_ToEmailAdmin, emlObj.EML_ToEmailList, emlObj.EML_FromEmail, emlObj.EML_Subject, emlObj.EML_MailBody, emlObj.EML_SMTPServer, "TCK_PKID", tickObj.TCK_PKID.ToString(), "0", 5000, out threadId, null, null);
+                                        Thread.Sleep(0);
+                                        //Console.WriteLine("Main thread {0} does some work.",Thread.CurrentThread.ManagedThreadId);
+                                        // Call EndInvoke to wait for the asynchronous call to complete,
+                                        // and to retrieve the results.
+                                        SMTPMailResponseObject returnValue = caller.EndInvoke(out threadId, result);
+                                        //Console.WriteLine("The call executed on thread {0}, with return value \"{1}\".",threadId, returnValue);
+
+                                        #endregion
+
+                                    }
+                                    else
+                                    {
+                                        EmailDispatcherService emsWS = new EmailDispatcherService();
+                                        emsWS.Url = ConfigurationManager.AppSettings["EmailWSURL"];
+
+                                        NewBilletterie.EmailWS.EmailMessageObject emlObj = new NewBilletterie.EmailWS.EmailMessageObject();
+                                        emlObj = PopulateEmailObject(tickObj);
+                                        opResp = emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+                                    }
+
+                                }
+
+                                lblMainErrorMessage.Text = "";
+                                ModalPopupExtenderSuccess.Show();
+                                lblSuccessHeading.Text = "Ticket successfully created: [T " + tickObj.TCK_PKID + "]";
+                                lblTicketConfirmation.Text = "Thank you for contacting " + ConfigurationManager.AppSettings["OrganisationName"] + ". <br /><br /> Your query has been assigned ticket reference number [<b> T" + tickObj.TCK_PKID + "</b>]. <br /><br />A confirmation email will be sent to email account [<b>" + tickObj.TCK_AlternateEmail + "</b>] shortly. <br /><br />Please quote this ticket number for any further correspondence regarding this query.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lblMainErrorMessage.Text = "[" + errMessage + "]";
+                    }
+                }
+                else
+                {
+                    lblMainErrorMessage.Text = "[" + errMessage + "]";
+                }
+            }
+            else
+            {
+                lblMainErrorMessage.Text = "[Invalid CAPTCHA Text]";
+            }
+        }
+
+        //protected void btnSubmitTicket_Click(object sender, EventArgs e)
+        //{
+        //    if (txtCaptchaText.Text.Trim() == Session["BillCaptcha"].ToString())
+        //    {
+        //        DataAccess da = new DataAccess();
+        //        Common cm = new Common();
+        //        string errMessage = "";
+        //        ticketObject tickObj = new ticketObject();
+        //        NewBilletterie.EmailWS.OperationResponseObject opResp = new NewBilletterie.EmailWS.OperationResponseObject();
+        //        errMessage = ValidateFileBeforeUpload();
+        //        if (errMessage == "")
+        //        {
+        //            tickObj = PopulateTicketObject();
+        //            errMessage = cm.ValidateInput(tickObj);
+        //            if (errMessage == "")
+        //            {
+        //                NewBilletterie.Classes.InsertResponseObject insResp = new NewBilletterie.Classes.InsertResponseObject();
+        //                UpdateResponseObject updResp = new UpdateResponseObject();
+        //                //Save ticket
+        //                insResp = da.InsertBilletterieTicketRecord(tickObj);
+        //                if (!insResp.noError)
+        //                {
+        //                    //Show error message
+        //                    lblMainErrorMessage.Text = "[" + insResp.errorMessage + "]";
+        //                }
+        //                else
+        //                {
+        //                    //Update ticket number
+        //                    string insertedPKID = insResp.insertedPKID;
+        //                    tickObj.TCK_PKID = Int32.Parse(insertedPKID);
+        //                    tickObj.TCK_DateCreated = DateTime.Now.ToString();
+
+        //                    //if (tickObj.AttachedFile != null)
+        //                    //{
+        //                    //    //Save document
+        //                    //    insResp = da.InsertBilletterieDocumentRecord(tickObj.AttachedFile);
+        //                    //    string destFile = cm.MoveDocuments(tickObj.AttachedFile.DCM_DocumentPath, insResp.insertedPKID.ToString());
+        //                    //    updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), destFile, insertedPKID);
+        //                    //}
+
+
+        //                    if (tickObj.AttachedFiles != null)
+        //                    {
+        //                        foreach (fileAttachmentObject tickAttach in tickObj.AttachedFiles)
+        //                        //Save document
+        //                        {
+        //                            insResp = da.InsertBilletterieDocumentRecord(tickAttach);
+        //                            string destFile = cm.MoveDocuments(tickAttach.DCM_DocumentPath, insResp.insertedPKID.ToString());
+        //                            updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), destFile, insertedPKID);
+        //                        }
+        //                    }
+
+
+        //                    string ticketNumber = GenerateTicketNumber(insertedPKID);
+        //                    updResp = da.UpdateBilletterieTicketRecord(insertedPKID, ticketNumber);
+
+        //                    tickObj.TCK_TicketNumber = ticketNumber;
+
+        //                    //Update if file has been attached from external
+        //                    if (tickObj.TCK_HasFile == true)
+        //                    {
+        //                        da.UpdateGenericBilletterieRecord("update TB_TCK_Ticket set TKR_HasFile = 1 where TCK_PKID = " + insertedPKID);
+        //                    }
+
+        //                    if (bool.Parse(ConfigurationManager.AppSettings["GenerateCaseForm"]))
+        //                    {
+        //                        userProfileObject usrSession = new userProfileObject();
+        //                        usrSession = (userProfileObject)Session["userObjectCookie"];
+
+        //                        //string docExtention = ".pdf";
+        //                        string docExtention = ".pdf";
+        //                        //CaseDocument1 cd1 = new CaseDocument1();
+        //                        CaseDocument1PDF cd1 = new CaseDocument1PDF();
+        //                        cd1.CreatePackage(ConfigurationManager.AppSettings["LocalDocumentsContentPath"] + ticketNumber + docExtention, tickObj, usrSession);
+
+
+        //                        fileAttachmentObject caseDocObj = new fileAttachmentObject();
+
+        //                        caseDocObj.DCT_PKID = 4;
+        //                        caseDocObj.DCS_PKID = 1;
+        //                        caseDocObj.DCL_PKID = 1;
+        //                        caseDocObj.DCM_DocumentPath = ConfigurationManager.AppSettings["LocalDocumentsContentPath"] + ticketNumber + docExtention;
+        //                        caseDocObj.DCM_OriginalName = ticketNumber + docExtention;
+        //                        caseDocObj.DCM_DerivedName = ticketNumber + docExtention;
+        //                        caseDocObj.DCM_Extention = docExtention;
+        //                        caseDocObj.STS_PKID = 30;
+
+        //                        insResp = da.InsertBilletterieDocumentRecord(caseDocObj);
+        //                        updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), caseDocObj.DCM_DocumentPath, insertedPKID);
+        //                    }
+
+        //                    if (!updResp.noError)
+        //                    {
+        //                        //Show error message
+        //                        lblMainErrorMessage.Text = "[" + updResp.errorMessage + "]";
+        //                    }
+        //                    else
+        //                    {
+        //                        tickObj.TCK_TicketNumber = ticketNumber;
+
+        //                        //Assign due date and auto assign if possible
+        //                        if (bool.Parse(ConfigurationManager.AppSettings["AutoAssignDueDate"]))
+        //                        {
+        //                            UpdateTicketDueDate(tickObj.TCK_PKID.ToString());
+        //                        }
+
+        //                        //Send emails if configured
+        //                        if (bool.Parse(ConfigurationManager.AppSettings["MailNotifications"]))
+        //                        {
+        //                            ////Send email record
+        //                            //EmailDispatcherService emsWS = new EmailDispatcherService();
+        //                            //NewBilletterie.EmailWS.EmailMessageObject emlObj = new NewBilletterie.EmailWS.EmailMessageObject();
+        //                            //emlObj = PopulateEmailObject(tickObj);
+        //                            //emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+
+        //                            if (bool.Parse(ConfigurationManager.AppSettings["SendEmailOnDemand"]))
+        //                            {
+        //                                NewBilletterie.EmailWS.EmailMessageObject emlObj = new NewBilletterie.EmailWS.EmailMessageObject();
+        //                                emlObj = PopulateEmailObject(tickObj);
+        //                                SendMail sm = new SendMail();
+        //                                SMTPMailResponseObject smtRespObj = new SMTPMailResponseObject();
+
+        //                                #region Normal sending of emails
+        //                                //smtRespObj = sm.SendSMTPMail(emlObj.EML_ToEmailAdmin, emlObj.EML_ToEmailList, emlObj.EML_FromEmail, emlObj.EML_Subject, emlObj.EML_MailBody, emlObj.EML_SMTPServer);
+        //                                //if (smtRespObj.noError)
+        //                                //{
+        //                                //    emlObj.EML_Status = "2";
+        //                                //}
+        //                                //else
+        //                                //{
+        //                                //    emlObj.EML_Status = "1";
+        //                                //}
+        //                                //EmailDispatcherService emsWS = new EmailDispatcherService();
+        //                                //emsWS.Url = ConfigurationManager.AppSettings["EmailWSURL"];
+        //                                //opResp = emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+        //                                #endregion
+
+        //                                #region Asynchronous sending of email
+
+        //                                int threadId;
+        //                                // Create an instance of the test class.
+        //                                SendMail ad = new SendMail();
+        //                                // Create the delegate.
+        //                                //NewBilletterie.Classes.SendMail.AsyncMethodCaller caller = new NewBilletterie.Classes.SendMail.AsyncMethodCaller(emlObj.EML_ToEmailAdmin, emlObj.EML_ToEmailList, emlObj.EML_FromEmail, emlObj.EML_Subject, emlObj.EML_MailBody, emlObj.EML_SMTPServer,0,0 );
+        //                                NewBilletterie.Classes.SendMail.AsyncMethodCaller caller = new NewBilletterie.Classes.SendMail.AsyncMethodCaller(ad.SendSMTPMailAsync);
+        //                                // Initiate the asychronous call.
+        //                                IAsyncResult result = caller.BeginInvoke(emlObj.EML_ToEmailAdmin, emlObj.EML_ToEmailList, emlObj.EML_FromEmail, emlObj.EML_Subject, emlObj.EML_MailBody, emlObj.EML_SMTPServer, "TCK_PKID", tickObj.TCK_PKID.ToString(), "0",  5000, out threadId, null, null);
+        //                                Thread.Sleep(0);
+        //                                //Console.WriteLine("Main thread {0} does some work.",Thread.CurrentThread.ManagedThreadId);
+        //                                // Call EndInvoke to wait for the asynchronous call to complete,
+        //                                // and to retrieve the results.
+        //                                SMTPMailResponseObject returnValue = caller.EndInvoke(out threadId, result);
+        //                                //Console.WriteLine("The call executed on thread {0}, with return value \"{1}\".",threadId, returnValue);
+
+        //                                #endregion
+
+        //                            }
+        //                            else
+        //                            {
+        //                                EmailDispatcherService emsWS = new EmailDispatcherService();
+        //                                emsWS.Url = ConfigurationManager.AppSettings["EmailWSURL"];
+
+        //                                NewBilletterie.EmailWS.EmailMessageObject emlObj = new NewBilletterie.EmailWS.EmailMessageObject();
+        //                                emlObj = PopulateEmailObject(tickObj);
+        //                                opResp = emsWS.AddEmailRecord(emlObj, ConfigurationManager.AppSettings["serviceKey"]);
+        //                            }
+
+        //                        }
+
+        //                        lblMainErrorMessage.Text = "";
+        //                        ModalPopupExtenderSuccess.Show();
+        //                        lblSuccessHeading.Text = "Ticket successfully created: [ " + ticketNumber + "]";
+        //                        lblTicketConfirmation.Text = "Thank you for contacting " + ConfigurationManager.AppSettings["OrganisationName"] + ". <br /><br /> Your query has been assigned ticket reference number [<b>" + ticketNumber + "</b>]. <br /><br />A confirmation email will be sent to email account [<b>" + tickObj.TCK_AlternateEmail + "</b>] shortly. <br /><br />Please quote this ticket number for any further correspondence regarding this query.";
+        //                    }
+        //                }
+        //            }
+        //            else
+        //            {
+        //                lblMainErrorMessage.Text = "[" + errMessage + "]";
+        //            }
+        //        }
+        //        else
+        //        {
+        //            lblMainErrorMessage.Text = "[" + errMessage + "]";
+        //        }
+        //    }
+        //    else
+        //    {
+        //        lblMainErrorMessage.Text = "[Invalid CAPTCHA Text]";
+        //    }
+        //}
+
+        protected void btnOK_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/ExternalPages/ViewTickets.aspx", false);
+        }
+
+        #endregion
+
+        public string GetFormattedOfficeDate(string unformattedDate)
+        {
+            string retValue = "";
+            try
+            {
+                retValue = DateTime.Parse(unformattedDate).Year.ToString() + "-" + DateTime.Parse(unformattedDate).Month.ToString("D2") + "-" + DateTime.Parse(unformattedDate).Day.ToString("D2") + " 00:00:00.000";
+            }
+            catch (Exception)
+            {
+                retValue = "";
+            }
+            return retValue;
+        }
+
+        public string GetAllowedOfficeDate(string _applicationDate)
+        {
+            string retValue = _applicationDate;
+            try
+            {
+                DataSet ds = new DataSet();
+
+                string applicationYear = DateTime.Parse(_applicationDate).Year.ToString();
+
+                if (_applicationDate.Trim() != "")
+                {
+                    string formattedDate = GetFormattedOfficeDate(_applicationDate);
+                    retValue = formattedDate;
+                    ServerServices svrWS = new ServerServices();
+                    svrWS.Url = ConfigurationManager.AppSettings["CUBAServerServiceURL"];
+
+                    ds = svrWS.GetGenericDataSet("select top 1 CONVERT(VARCHAR, FBD_AllowedDate, 106) from TB_FBD_ForbiddenDates where FBD_ForbiddenDate = '" + formattedDate + "' and FBD_Deleted = 0", ConfigurationManager.AppSettings["serviceKey"]);
+                    if (ds != null)
+                    {
+                        if (ds.Tables[0].Rows.Count > 0)
+                        {
+                            retValue = ds.Tables[0].Rows[0].ItemArray[0].ToString();
+
+                            if (retValue == "")
+                            {
+                                retValue = formattedDate;
+                            }
+                            else
+                            {
+                                retValue = GetFormattedOfficeDate(retValue);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                retValue = "";
+            }
+            return retValue;
+        }
+
+        protected void AjaxFileUpload11_UploadStart(object sender, AjaxFileUploadStartEventArgs e)
+        {
+            //AjaxFileUpload11.
+            //for (int i = 0; i < e.FilesInQueue; i++)
+            //{
+            //    AjaxFileUpload11.ClearFileListAfterUpload
+            //}
+            //string servArg = e.ServerArguments;
+            //int fileCount = e.FilesInQueue;
+        }
+
+        protected void AjaxFileUpload11_UploadCompleteAll(object sender, AjaxFileUploadCompleteAllEventArgs e)
+        {
+            ScriptManager.RegisterStartupScript(Page, this.GetType(), "str", "<script language='javascript' type='text/javascript'> alert('File upload completed successfully.'); </script>", false);
+
+            //Response.Write("<script language='javascript'> alert(' problem');</script>");
+
+            //lblFileUploadError.Text = "File upload completed successfully.";
+            //lblFileUploadError.ForeColor = System.Drawing.Color.Green;
+        }
+
+        //protected void btnSaveUploadedFile_Click(object sender, EventArgs e)
+        //{
+        //    DataAccess da = new DataAccess();
+        //    string errMessage = ValidateFileBeforeUpload();
+        //    attachmentList = new List<fileAttachmentObject>();
+        //    if (errMessage == "")
+        //    {
+        //        fileAttachmentObject fupObject = new fileAttachmentObject();
+
+        //        fupObject.DCT_PKID = 1;
+        //        fupObject.DCS_PKID = 1;
+        //        fupObject.DCL_PKID = 1;
+        //        fupObject.DCM_DocumentPath = "";
+        //        fupObject.DCM_OriginalName = fupAttachFile.FileName;
+        //        fupObject.DCM_DerivedName = "doc" + Path.GetExtension(fupAttachFile.FileName);
+        //        fupObject.DCM_Extention = Path.GetExtension(fupAttachFile.FileName);
+        //        fupObject.STS_PKID = 30;
+        //        fupObject.AttachmentSize = fupAttachFile.FileBytes.Length;
+        //        fupObject.MimeType = fupAttachFile.PostedFile.ContentType;
+
+        //        NewBilletterie.Classes.InsertResponseObject insResp = new NewBilletterie.Classes.InsertResponseObject();
+        //        UpdateResponseObject updResp = new UpdateResponseObject();
+        //        Common cm = new Common();
+        //        if (Session["AttachmentList"] != null)
+        //        {
+        //            fileUploadList = (List<fileAttachmentObject>)Session["AttachmentList"];
+        //            foreach (fileAttachmentObject app in fileUploadList)
+        //            {
+        //                attachmentList.Add(new fileAttachmentObject { DCT_PKID = app.DCT_PKID, DCS_PKID = app.DCS_PKID, DCL_PKID = app.DCL_PKID, DCM_DocumentPath = app.DCM_DocumentPath, DCM_OriginalName = app.DCM_OriginalName, DCM_DerivedName = app.DCM_DerivedName, DCM_Extention = app.DCM_Extention, STS_PKID = app.STS_PKID, AttachmentSize = app.AttachmentSize, MimeType = app.MimeType });
+        //            }
+        //            //attachmentList.Add(new fileAttachmentObject { DCM_OriginalName = fupAttachFile.FileName, DCM_Extention = Path.GetExtension(fupAttachFile.FileName) });
+
+
+        //            userProfileObject usrSession = new userProfileObject();
+        //            usrSession = (userProfileObject)Session["userObjectCookie"];
+
+        //            //if (tickObj.AttachedFile != null)
+        //            //{
+        //            //Save document
+        //            //insResp = da.InsertBilletterieDocumentRecord(fupObject);
+        //            string destFile = cm.MoveDocuments(fupObject.DCM_DocumentPath, usrSession.USR_PKID.ToString());
+        //            //updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), destFile, insertedPKID);
+        //            //}
+
+        //            attachmentList.Add(new fileAttachmentObject { DCT_PKID = fupObject.DCT_PKID, DCS_PKID = fupObject.DCS_PKID, DCL_PKID = fupObject.DCL_PKID, DCM_DocumentPath = fupObject.DCM_DocumentPath, DCM_OriginalName = fupObject.DCM_OriginalName, DCM_DerivedName = fupObject.DCM_DerivedName, DCM_Extention = fupObject.DCM_Extention, STS_PKID = fupObject.STS_PKID, AttachmentSize = fupObject.AttachmentSize, MimeType = fupObject.MimeType });
+        //            Session["AttachmentList"] = attachmentList;
+        //            btnCancelAllUpload.Visible = true;
+
+        //            //if (tickObj.AttachedFile != null)
+        //            //{
+        //            //    //Save document
+        //            //    insResp = da.InsertBilletterieDocumentRecord(tickObj.AttachedFile);
+        //            //    string destFile = cm.MoveDocuments(tickObj.AttachedFile.DCM_DocumentPath, insResp.insertedPKID.ToString());
+        //            //    updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), destFile, insertedPKID);
+        //            //}
+
+        //        }
+        //        else
+        //        {
+        //            attachmentList = new List<fileAttachmentObject>();
+        //            attachmentList.Add(new fileAttachmentObject { DCT_PKID = fupObject.DCT_PKID, DCS_PKID = fupObject.DCS_PKID, DCL_PKID = fupObject.DCL_PKID, DCM_DocumentPath = fupObject.DCM_DocumentPath, DCM_OriginalName = fupObject.DCM_OriginalName, DCM_DerivedName = fupObject.DCM_DerivedName, DCM_Extention = fupObject.DCM_Extention, STS_PKID = fupObject.STS_PKID, AttachmentSize = fupObject.AttachmentSize, MimeType = fupObject.MimeType });
+        //            //attachmentList.Add(new fileAttachmentObject { DCM_OriginalName = fupAttachFile.FileName, DCM_Extention = Path.GetExtension(fupAttachFile.FileName) });
+        //            Session["AttachmentList"] = attachmentList;
+        //            btnCancelAllUpload.Visible = true;
+
+        //            //if (tickObj.AttachedFile != null)
+        //            //{
+        //            //    //Save document
+        //            //    insResp = da.InsertBilletterieDocumentRecord(tickObj.AttachedFile);
+        //            //    string destFile = cm.MoveDocuments(tickObj.AttachedFile.DCM_DocumentPath, insResp.insertedPKID.ToString());
+        //            //    updResp = da.UpdateBilletterieDocumentRecord(insResp.insertedPKID.ToString(), destFile, insertedPKID);
+        //            //}
+
+        //        }
+        //        GridViewUploadedDocs.DataSource = attachmentList;
+        //        GridViewUploadedDocs.DataBind();
+        //    }
+        //    else
+        //    {
+        //        lblMainErrorMessage.Text = errMessage;
+        //        lblMainErrorMessage.Visible = true;
+        //    }
+
+        //}
+
+        protected void btnCancelAllUpload_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+    }
+}
